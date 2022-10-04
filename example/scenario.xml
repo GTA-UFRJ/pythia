@@ -1,0 +1,37 @@
+<?xml version="1.0"?>
+<experiment>
+
+  <!-- UEs -->
+  <!-- The file ueA_positions.csv represents a walk from 
+  Triumph's arc to Tour Eiffel in 40 minutes -->
+  <ue name="ueA" positions_file="example/ue1_positions.csv">
+    <ue_app name="client1" image="simple_client" command="simple_server:8080 1"/>
+  </ue>
+
+  <!-- MEC Hosts -->
+  <mec_host name="mecA" memmory="1" cpu="2"/>
+  <mec_host name="mecB" memmory="1" cpu="2"/>
+
+  <!-- MEC Apps -->
+  <mec_app name="server1" image="simple_server" command=""/>
+
+  <!-- Base Stations -->
+  <!-- Arc du triomphe -->
+  <base_station lat="48.873696" lng="2.295465" name="bs1">
+    <link dest="mecA" latency="10" upload="100Mbps" download="100Mbps"/>
+    <link dest="mecB" latency="20" upload="100Mbps" download="100Mbps"/>
+  </base_station>
+  <!-- Tour Eiffel -->
+  <!-- Verificar unidade e valores da latencia -->
+  <base_station lat="48.857994" lng="2.295016" name="bs2">
+    <link dest="mecA" latency="20" upload="100Mbps" download="100Mbps"/>
+    <link dest="mecB" latency="10" upload="100Mbps" download="100Mbps"/>
+  </base_station>
+  <!-- Place de la Concorde -->
+  <base_station lat="48.865913" lng="2.321568" name="bs3">
+    <link dest="mecA" latency="10" upload="100Mbps" download="100Mbps"/>
+    <link dest="mecB" latency="20" upload="100Mbps" download="100Mbps"/>
+  </base_station>
+
+  <!-- In the future, it should be possible to use a dynamic topology -->
+</experiment>

@@ -1,0 +1,4 @@
+zone "pythia.com" {
+    type master;
+    file "/etc/bind/zones/db.pythia.com";
+};

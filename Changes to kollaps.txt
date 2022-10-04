@@ -1,0 +1,4 @@
+Changes to kollaps:
+
+kollaps/Dashboard.py
+Add route /readyness

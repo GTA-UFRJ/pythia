@@ -1,0 +1,9 @@
+What if applications are replicated into many MEC cloudlets?
+
+Can we make the application in "almost ready" state?
+
+Who should "recover" when applications change the "home agent"?
+
+Is mobility the only thing that can make it important to change the MEC cloudlet serving the application?
+
+MEC stands for multi-access edge computing. It is meant to serve different "access networks", such as wifi, 5G, and so on. What if UE migrate not between different eNB from the same 5G operator, but between wifi APs? And between 5G eNB and a wifi AP (hard, since IP ranges will be different).
