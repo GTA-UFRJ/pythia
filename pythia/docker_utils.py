@@ -126,7 +126,7 @@ def connect_app_to_app(ue_app, mec_app):
   #execute_cmd(cmd, app.docker_id)
 
   #v_ue ip route add (mec_net) via (ip do v_mec na core_net)
-  cmd = f"ip route add {mec_app.ip} via {ue_app.host.infra_ip}"
+  cmd = f"ip route add {mec_app.ip} via {mec_app.host.infra_ip}"
   logging.info(f"Executing {cmd} to {ue_app.host.docker_id}")
   execute_cmd(cmd, ue_app.host.docker_id)
 
