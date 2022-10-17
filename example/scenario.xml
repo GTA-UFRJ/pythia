@@ -13,7 +13,7 @@
   <mec_host name="mecB" memmory="1" cpu="2"/>
 
   <!-- MEC Apps -->
-  <mec_app name="server1" image="simple_server" command=""/>
+  <mec_app name="server1" image="simple_server" ip="172.21.0.3" command=""/>
 
   <!-- Base Stations -->
   <!-- Arc du triomphe -->

@@ -34,6 +34,12 @@ def bootstrap(networks, mec_hosts, mec_apps, UEs):
   for net in networks:
     docker_utils.create_network(networks[net])
 
+  #Allocate mec_apps ip's before allocating
+  # ip's to the virtual mec hosts
+  for mec_app in mec_apps:
+    mec_apps[mec_app].ip = networks['mec'].allocate_ip(mec_apps[mec_app].ip)
+
+
   #Create MECHosts
   for vmh in mec_hosts:
     mec_hosts[vmh].infra_ip = networks['infra'].allocate_ip()
@@ -68,7 +74,7 @@ def bootstrap(networks, mec_hosts, mec_apps, UEs):
   #Todo: start MEC Apps through MEC System.
   mec_host = mec_hosts[list(mec_hosts.keys())[0]]
   for mec_app in mec_apps:
-    mec_apps[mec_app].ip = networks['mec'].allocate_ip()
+    mec_apps[mec_app].ip = networks['mec'].allocate_ip(mec_apps[mec_app].ip)
     mec_apps[mec_app].host = mec_host
     mec_host.active_apps.add(mec_apps[mec_app])
     docker_utils.create_mec_app(mec_apps[mec_app], networks['mec'])

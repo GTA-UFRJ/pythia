@@ -1,0 +1,9 @@
+.DS_Store
+pythia.code-workspace
+venv
+env
+__pycache__/
+*.pyc
+
+topology.xml
+draft.py

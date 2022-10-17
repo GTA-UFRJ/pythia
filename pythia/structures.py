@@ -22,9 +22,10 @@ class PythiaApp(DockerContainer):
     self.ip = ""
 
 class PythiaMECApp(PythiaApp):
-  def __init__(self, name, image, command=""):
+  def __init__(self, name, image, ip, command=""):
     super().__init__(name, image,command)
     self.docker_id = "MECApp-" + self.id_str
+    self.ip = ip
 
 class PythiaUEApp(PythiaApp):
   def __init__(self, name, image, command=""):
@@ -170,12 +171,23 @@ class PythiaNetwork:
   def __init__(self, name, ip_range):
     self.name = name
     self.ip_range = ip_range
+    self.interface = interface
     self.ip_network = ipaddress.ip_network(ip_range)
     self.allocated_ips = set()
     self.free_ips = set(ipaddress.ip_network(ip_range).hosts())
     self.docker_obj = None
 
-  def allocate_ip(self):
-    ip = self.free_ips.pop()
+  def allocate_ip(self, ip_addr=0):
+    if (ip_addr):
+      ip = ipaddress.IPv4Address(ip_addr)
+      self.free_ips.remove(ip)
+    else:
+      ip = self.free_ips.pop()
     self.allocated_ips.add(ip)
     return format(ip)
+
+  #def allocate_ip(self, ip_addr):
+  #  """This method receives an ip_addr represented by a string and allocates it"""
+  #  ip = ipaddress.IPv4Address(ip_addr)
+  #  self.free_ips.remove(ip)
+  #  self.allocated_ips.add(ip)
