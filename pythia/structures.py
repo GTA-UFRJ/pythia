@@ -168,7 +168,7 @@ class PythiaBridge:
 
 class PythiaNetwork:
   """A docker network"""
-  def __init__(self, name, ip_range):
+  def __init__(self, name, ip_range, interface):
     self.name = name
     self.ip_range = ip_range
     self.interface = interface
