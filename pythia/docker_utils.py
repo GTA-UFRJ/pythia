@@ -17,12 +17,8 @@ def create_host(host, infra_network, external_network):
     client.containers.create(host.image,
                              name=host.docker_id,
                              cap_add=["NET_ADMIN"])
-
-    logging.info(f"Creating host {host.name}")
-    connect(host, infra_network.docker_obj, host.infra_ip)
-    logging.info("Connected infra ip")
-    connect(host, external_network.docker_obj, host.external_ip)
-    logging.info("Connected external ip")
+    connect(host, infra_network, host.infra_ip)
+    connect(host, external_network, host.external_ip)
     return 0
 
 def remove_container(container):
@@ -33,7 +29,6 @@ def remove_container(container):
   c.remove()
 
 def start_container(container):
-  logging.info(f"Starting container {container.docker_id}")
   c = client.containers.get(container.docker_id)
   c.start()
 
@@ -48,7 +43,7 @@ def create_external_app(app,network):
   client.containers.create(app.image,
                            name=app.docker_id,
                            cap_add=["NET_ADMIN"])
-  connect(app, network.docker_obj, app.ip)
+  connect(app, network, app.ip)
 
 
 def create_mec_app(app, network):
@@ -61,7 +56,7 @@ def create_mec_app(app, network):
                            name=app.docker_id,
                            hostname=app.name,
                            cap_add=["NET_ADMIN"])
-  connect(app, network.docker_obj, app.ip)
+  connect(app, network, app.ip)
 
 def create_ue_app(app, network):
   """This function creates an app container without running it.
@@ -88,20 +83,19 @@ def create_network(network):
 
   ipam_pool = docker.types.IPAMPool(
                            subnet=network.ip_range)
-
   ipam_config = docker.types.IPAMConfig(
     pool_configs=[ipam_pool])
-
   network.docker_obj = client.networks.create(
                          network.name,
-                         driver="overlay",
+                         driver="bridge",
                          attachable=True,
                          ipam=ipam_config)
 
-def connect(docker_container, docker_network, ip):
+def connect(docker_container, network, ip):
   """This function connects docker_container to the network"""
   c = client.containers.get(docker_container.docker_id)
-  docker_network.connect(c,ipv4_address=ip)
+  network.docker_obj.connect(c,ipv4_address=ip, 
+    driver_opt={"com.docker.network.bridge.name":network.interface})
 
 
 def connect_app_to_host(app):
@@ -109,25 +103,18 @@ def connect_app_to_host(app):
   a MECApp to its vMEC."""
   gateway_ip = app.host.external_ip
   cmd = "ip route del default"
-  logging.info(f"Executing {cmd} to {app.docker_id}")
   execute_cmd(cmd, app.docker_id)
   cmd = f"ip route add default via {gateway_ip}"
-  logging.info(f"Executing {cmd} to {app.docker_id}")
   execute_cmd(cmd, app.docker_id)
   return 0
 
 def connect_app_to_app(ue_app, mec_app):
   """This function connects two apps, using their 
   hosts to route packets."""
-  #v_mec ip route add (ue_net) via (ip  do v_ue na core_net)
   cmd = f"ip route add {ue_app.ip} via {ue_app.host.infra_ip}"
-  logging.info(f"Executing {cmd} to {mec_app.host.docker_id}")
   execute_cmd(cmd, mec_app.host.docker_id)
-  #execute_cmd(cmd, app.docker_id)
 
-  #v_ue ip route add (mec_net) via (ip do v_mec na core_net)
   cmd = f"ip route add {mec_app.ip} via {mec_app.host.infra_ip}"
-  logging.info(f"Executing {cmd} to {ue_app.host.docker_id}")
   execute_cmd(cmd, ue_app.host.docker_id)
 
 def execute_cmd(cmd, container_id):

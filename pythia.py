@@ -73,12 +73,12 @@ for ue in UEs:
   UEs[ue].image = ue_image
 
 #Invoke link estimation
-UEs = estimation.estimate(mec_hosts,
+"""UEs = estimation.estimate(mec_hosts,
                           UEs,
                           base_stations,
                           default_latency,
                           default_download,
-                          default_upload)
+                          default_upload)"""
 
 #Bootstrap emulation
 emulation.bootstrap(networks, mec_hosts, mec_apps, UEs)

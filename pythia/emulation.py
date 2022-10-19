@@ -51,30 +51,25 @@ def bootstrap(networks, mec_hosts, mec_apps, UEs):
 
   #Create UEs
   for vUE in UEs:
-    logging.info(f"Creating vUE {vUE}...")
     UEs[vUE].infra_ip = networks['infra'].allocate_ip()
     UEs[vUE].external_ip = networks['ue'].allocate_ip()
     docker_utils.create_host(UEs[vUE],
                              networks['infra'],
                              networks['ue'])
     docker_utils.start_container(UEs[vUE])
-    logging.info(f"vUE {vUE} created.")
 
     #Start apps on each vUE
     for ue_app in UEs[vUE].apps:
-      logging.info(f"Creating UEApp {ue_app}...")
       ue_app.ip = networks['ue'].allocate_ip()
       ue_app.host = UEs[vUE]
       docker_utils.create_external_app(ue_app, networks['ue'])
       docker_utils.start_container(ue_app)
       docker_utils.connect_app_to_host(ue_app)
-      logging.info(f"UEApp {ue_app} created.")
 
   #Start MEC apps. Allocate them to first host
   #Todo: start MEC Apps through MEC System.
   mec_host = mec_hosts[list(mec_hosts.keys())[0]]
   for mec_app in mec_apps:
-    #mec_apps[mec_app].ip = networks['mec'].allocate_ip(mec_apps[mec_app].ip)
     mec_apps[mec_app].host = mec_host
     mec_host.active_apps.add(mec_apps[mec_app])
     docker_utils.create_mec_app(mec_apps[mec_app], networks['mec'])
