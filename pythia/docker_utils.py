@@ -85,17 +85,21 @@ def create_network(network):
                            subnet=network.ip_range)
   ipam_config = docker.types.IPAMConfig(
     pool_configs=[ipam_pool])
+  logging.info(f"Interface name: {network.interface}")
   network.docker_obj = client.networks.create(
                          network.name,
                          driver="bridge",
                          attachable=True,
-                         ipam=ipam_config)
+                         ipam=ipam_config,
+                         #options={"com.docker.network.bridge.name":network.interface})
+                         options={"com.docker.network.container_iface_prefix":network.interface})
+
+
 
 def connect(docker_container, network, ip):
   """This function connects docker_container to the network"""
   c = client.containers.get(docker_container.docker_id)
-  network.docker_obj.connect(c,ipv4_address=ip, 
-    driver_opt={"com.docker.network.bridge.name":network.interface})
+  network.docker_obj.connect(c,ipv4_address=ip)
 
 
 def connect_app_to_host(app):
