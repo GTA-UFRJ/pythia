@@ -20,10 +20,12 @@ def emulate(mec_hosts, UEs, base_stations):
   events_queue = []
   for ue in UEs:
     events_queue += ue.links
-  events_queue.sort(key=lambda x: x.start_time)
+  events_queue.sort(key=lambda x: x.start_time, reverse=True)
   
   #Start main emulation loop
-  
+  while(len(events_queue)):
+    event = events_queue.pop()
+    print(f"Event = {event}")
 
 def bootstrap(networks, mec_hosts, mec_apps, UEs):
   """This function bootstraps the emulation.
@@ -83,7 +85,7 @@ def bootstrap(networks, mec_hosts, mec_apps, UEs):
     docker_utils.start_container(mec_apps[mec_app])
     docker_utils.connect_app_to_host(mec_apps[mec_app])
 
-
+"""
 def start(mec_hosts, UEs, mec_apps):
   for vmh in mec_hosts:
     docker_utils.start_container(mec_hosts[vmh])
@@ -95,7 +97,7 @@ def start(mec_hosts, UEs, mec_apps):
 
   for app in mec_apps:
     docker_utils.start_container(mec_apps[app])
-
+"""
 def finish(networks, mec_hosts, UEs):
   """This function removes all the containers 
   and networks from docker"""

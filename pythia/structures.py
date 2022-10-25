@@ -185,9 +185,3 @@ class PythiaNetwork:
       ip = self.free_ips.pop()
     self.allocated_ips.add(ip)
     return format(ip)
-
-  #def allocate_ip(self, ip_addr):
-  #  """This method receives an ip_addr represented by a string and allocates it"""
-  #  ip = ipaddress.IPv4Address(ip_addr)
-  #  self.free_ips.remove(ip)
-  #  self.allocated_ips.add(ip)

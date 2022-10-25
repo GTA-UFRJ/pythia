@@ -91,8 +91,9 @@ def create_network(network):
                          driver="bridge",
                          attachable=True,
                          ipam=ipam_config,
-                         #options={"com.docker.network.bridge.name":network.interface})
-                         options={"com.docker.network.container_iface_prefix":network.interface})
+                         options={
+                         "com.docker.network."+
+                         "container_iface_prefix":network.interface})
 
 
 
@@ -127,3 +128,29 @@ def execute_cmd(cmd, container_id):
   container = client.containers.get(container_id)
   return container.exec_run(cmd)
 
+def change_link(host_a, host_b, bitrate, delay, distribution=0):
+  """
+  This function changes the link between two pythia hosts.
+  """
+
+  #Execute on host a
+  change_link_on_host(host_a, host_b.infra_ip, bitrate, delay, distribution)
+
+  #Execute on host b
+  change_link_on_host(host_b, host_a.infra_ip, bitrate, delay, distribution)
+
+
+def change_link_on_host(host, ip_dst, bitrate, delay, distribution):
+
+  cmds = [f"tc qdisc add dev {interface} root handle 1: prio",
+  f"tc qdisc add dev {interface} parent 1:3 "+
+  f"handle 30: tbf rate {bitrate}kbit buffer 1600 limit 3000",
+
+  f"tc qdisc add dev {interface} parent 30:1 "+
+  f"handle 31: netem  delay {delay}ms {distribution}ms distribution normal",
+
+  f"tc filter add dev {interface} protocol ip parent "+
+  f"1:0 prio 3 u32 match ip dst {ip_dst} flowid 1:3"]
+
+  for cmd in cmds:
+    execute_cmd(cmd, host.docker_id)
