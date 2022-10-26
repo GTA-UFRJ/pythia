@@ -52,6 +52,9 @@ def create_mec_app(app, network):
     app: the app to run
     host: the PythiaMECApp object 
   """
+
+  logging.info(f"Creating container {app.docker_id} from {app.image}, "+
+      f"with ip={app.ip}.")
   client.containers.create(app.image,
                            name=app.docker_id,
                            hostname=app.name,
@@ -85,7 +88,6 @@ def create_network(network):
                            subnet=network.ip_range)
   ipam_config = docker.types.IPAMConfig(
     pool_configs=[ipam_pool])
-  logging.info(f"Interface name: {network.interface}")
   network.docker_obj = client.networks.create(
                          network.name,
                          driver="bridge",
@@ -93,7 +95,7 @@ def create_network(network):
                          ipam=ipam_config,
                          options={
                          "com.docker.network."+
-                         "container_iface_prefix":network.interface})
+                         "container_iface_prefix":network.interface_prefix})
 
 
 
@@ -128,29 +130,39 @@ def execute_cmd(cmd, container_id):
   container = client.containers.get(container_id)
   return container.exec_run(cmd)
 
-def change_link(host_a, host_b, bitrate, delay, distribution=0):
+def change_link(ue_app, mec_app,
+                ue_network, mec_network,
+                bitrate, delay, distribution=0):
   """
-  This function changes the link between two pythia hosts.
+  This function changes the link between two pythia apps.
+  bitrate is on kbits
+  delay and distribution are in ms.
   """
 
   #Execute on host a
-  change_link_on_host(host_a, host_b.infra_ip, bitrate, delay, distribution)
+  change_link_on_host(ue_app, mec_app.ip, ue_network.interface,
+                      bitrate, delay)
 
   #Execute on host b
-  change_link_on_host(host_b, host_a.infra_ip, bitrate, delay, distribution)
+  change_link_on_host(mec_app, ue_app.ip, mec_network.interface,
+                      bitrate, delay)
 
 
-def change_link_on_host(host, ip_dst, bitrate, delay, distribution):
+def change_link_on_host(host, ip_dst, interface,
+                        bitrate, delay):
 
   cmds = [f"tc qdisc add dev {interface} root handle 1: prio",
   f"tc qdisc add dev {interface} parent 1:3 "+
   f"handle 30: tbf rate {bitrate}kbit buffer 1600 limit 3000",
 
   f"tc qdisc add dev {interface} parent 30:1 "+
-  f"handle 31: netem  delay {delay}ms {distribution}ms distribution normal",
+  f"handle 31: netem delay {delay}ms",
+  
 
   f"tc filter add dev {interface} protocol ip parent "+
   f"1:0 prio 3 u32 match ip dst {ip_dst} flowid 1:3"]
 
+  logging.info(f"=== Executing commands on {host.docker_id}")
   for cmd in cmds:
+    logging.info(cmd)
     execute_cmd(cmd, host.docker_id)
