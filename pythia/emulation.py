@@ -8,23 +8,36 @@ The MEC Platform should be responsible for MECApp creation"""
 import pythia.docker_utils as docker_utils
 import logging
 import sys
+import time
 
 logging.basicConfig(level=logging.INFO)
 
-def emulate(mec_hosts, UEs, base_stations):
+def emulate(networks, links):
   """This function runs the emulation phase of Pythia"""
 
-  #Start applications
-
   #Create emulation events queue
-  events_queue = []
-  for ue in UEs:
-    events_queue += ue.links
-  events_queue.sort(key=lambda x: x.start_time, reverse=True)
+  events_queue = links
+  events_queue.sort(key=lambda x: x.time, reverse=True)
   
+  emulation_zero = time.time()
+  emulation_time_error = 0.3
+  event = events_queue.pop()
   #Start main emulation loop
   while(len(events_queue)):
-    event = events_queue.pop()
+    emulation_time = time.time() - emulation_zero
+    time_difference = event.time - emulation_time
+    if time_difference < emulation_time_error:
+      for ue_app in event.ue.apps:
+        for mec_app in event.mec_host.active_apps:
+          docker_utils.change_link(ue_app, mec_app,
+                             networks['ue'], networks['mec'],
+                           event.upload, event.latency)
+      event = events_queue.pop()
+      time_difference = event.time - emulation_time
+    logging.info(f"Event time = {event.time}, emu time = {emulation_time}, Time diff = {time_difference}")
+    if time_difference < 0:
+      continue
+    time.sleep(time_difference)
     print(f"Event = {event}")
 
 def bootstrap(networks, mec_hosts, mec_apps, UEs):

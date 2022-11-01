@@ -162,7 +162,7 @@ def change_link_on_host(host, ip_dst, interface,
   f"tc filter add dev {interface} protocol ip parent "+
   f"1:0 prio 3 u32 match ip dst {ip_dst} flowid 1:3"]
 
-  logging.info(f"=== Executing commands on {host.docker_id}")
+  #logging.info(f"=== Executing commands on {host.docker_id}")
   for cmd in cmds:
-    logging.info(cmd)
+    #logging.info(cmd)
     execute_cmd(cmd, host.docker_id)

@@ -41,7 +41,7 @@ def parse_scenario(filename):
                                  ma_xml.attrib['command'])
 
   # Creating base stations
-  for bs_xml in root.iter('base_station'):
+  """for bs_xml in root.iter('base_station'):
     # Creating links between base stations and MEC Hosts
     bs = PythiaBS(bs_xml.attrib['name'],
                   (float(bs_xml.attrib['lat']), float(bs_xml.attrib['lng'])))
@@ -53,8 +53,18 @@ def parse_scenario(filename):
                                  link_tag.attrib['download']))
 
     base_stations[bs.name] = bs
+  """
+  links = []
 
-  return mec_hosts,UEs, mec_apps, base_stations
+  for link_xml in root.iter('link'):
+    links.append(PythiaLink(UEs[link_xml.attrib['ue']],
+                            mec_hosts[link_xml.attrib['mec_host']],
+                            link_xml.attrib['latency'],
+                            link_xml.attrib['upload'],
+                            link_xml.attrib['download'],
+                            time=float(link_xml.attrib['time'])))
+
+  return mec_hosts,UEs, mec_apps, links
 
 def write_link_states(filename):
 

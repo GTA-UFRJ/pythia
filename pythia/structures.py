@@ -92,7 +92,7 @@ class PythiaUEHost(PythiaEmulationHost):
                                    latency,
                                    upload,
                                    download,
-                                   start_time=c[0]))
+                                   time=c[0]))
 
 
   def get_positions_from_file(self, positions_file=None):
@@ -115,36 +115,36 @@ class PythiaMECHost(PythiaEmulationHost):
     self.active_apps = set()
     self.docker_id = "vMEC-" + self.id_str
 
-class PythiaBS():
-  """This class represents a base station"""
-  def __init__(self, name, position):
-    self.name = name
-    self.position = position #(lat,lng)
-    self.links = []
+#class PythiaBS():
+#  """This class represents a base station"""
+#  def __init__(self, name, position):
+#    self.name = name
+#    self.position = position #(lat,lng)
+#    self.links = []
 
 class PythiaLink():
   def __init__(self,
-               origin,
-               destination,
+               ue,
+               mec_host,
                latency=None,
                upload=None,
                download=None,
                network=None,
-               start_time=0):
-    self.origin = origin
-    self.dest = destination
+               time=0):
+    self.ue = ue
+    self.mec_host = mec_host
     self.latency = latency
     self.upload = upload
     self.download = download
     self.network = network
-    self.start_time = start_time
+    self.time = time
 
 
   def get_dict(self):
     d = {}
 
-    d['origin'] = self.origin
-    d['dest'] = self.dest
+    d['ue'] = self.ue
+    d['mec_host'] = self.mec_host
     if self.latency:
       d['latency'] = self.latency
     if self.upload:
@@ -153,8 +153,8 @@ class PythiaLink():
       d['download'] = self.download
     if self.network:
       d['network'] = self.network.name
-    if self.start_time:
-      d['time'] = self.start_time
+    if self.time:
+      d['time'] = self.time
     return d
 
 
