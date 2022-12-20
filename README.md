@@ -175,3 +175,9 @@ MEC can be regarded as a Virtual Network Function (VNF). Nevertheless, the coupl
 In [this paper](https://gitlab.inria.fr/pcruzcam/pythia/-/blob/master/doc/mobility/08486021.pdf), authors discuss the mobility of VNFs. They have an almost artistic sentence that states: "while placing vNFs near end-users radically reduces vNF-to-user end-to-end (E2E) latency (the latency experienced between an end-user and the associated vNF), time-to-response, and unnecessary utilisation of the core network, the location of edge vNFs has to be carefully managed to accommodate movements of end-users (that are expected to happen constantly due to the small cell sizes of next generation mobile architecture (5G)) and also to keep up with varying traffic dynamics that cause highly variable latency across network links.". A very condensed explanation.
 
 
+# Usage instructions
+
+- Install venv
+- source env/bin/activate
+- Build images (example/simple_server, example/simple_client, pythia/images/vmec_host, pythia/images/vUE)
+- python3 pythia.py
