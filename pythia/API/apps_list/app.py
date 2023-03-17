@@ -8,7 +8,7 @@ import os  # os module for interacting with the operating system
 app = Flask(__name__)
 
 # Define a route for the root URL "/"
-@app.route("/")
+@app.route("/dev_app/v1/app_list")
 def get_scenario_data():
     
     # Parse the XML file "scenario.xml" using ElementTree
@@ -27,6 +27,10 @@ def get_scenario_data():
 
     # Encode the extracted data as a JSON-encoded string and return it as the response
     return json.dumps(lista)
+
+@app.route("/")
+def hello_world():
+    return "<p>Hello, World!</p>"
 
 # Run the Flask application if the script is being executed directly
 if __name__ == '__main__':
