@@ -1,0 +1,23 @@
+import subprocess
+
+def detect_latency(host):
+    try:
+        # Run the ping command with a single ping and capture the output
+        result = subprocess.run(["ping", "-c", "1", host],
+                                 stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, check=True)
+
+        # Parse the output to extract the round-trip time (RTT)
+        lines = result.stdout.splitlines()
+        rtt_line = lines[-1]  # Assuming the last line contains RTT information
+        return rtt_line
+    except subprocess.CalledProcessError:
+        # Handle the case where the ping command fails (e.g., host is unreachable)
+        return None
+
+# Example usage:
+host = "www.ufrj.br"
+latency = detect_latency(host)
+if latency is not None:
+    print(f"Latency to {host}: {latency} ms")
+else:
+    print(f"Unable to detect latency to {host}")
