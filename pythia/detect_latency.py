@@ -1,5 +1,5 @@
 import subprocess
-
+import time
 def detect_latency(host):
     try:
         # Run the ping command with a single ping and capture the output
@@ -14,10 +14,16 @@ def detect_latency(host):
         # Handle the case where the ping command fails (e.g., host is unreachable)
         return None
 
-# Example usage:
 host = "www.ufrj.br"
-latency = detect_latency(host)
-if latency is not None:
-    print(f"Latency to {host}: {latency} ms")
-else:
-    print(f"Unable to detect latency to {host}")
+start_time = time.time()
+time_elapsed = 0
+time_limit = 300
+while time_elapsed <= time_limit:
+    latency = detect_latency(host)
+    if latency is not None:
+        print(f"Latency to {host}: {latency} ms")
+    else:
+        print(f"Unable to detect latency to {host}")
+    time.sleep(10 - (time.time() - start_time) % 10)
+    time_elapsed = time.time() - start_time
+
