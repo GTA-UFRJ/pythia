@@ -3,7 +3,7 @@ import time
 def detect_latency(host):
     try:
         # Run the ping command with a single ping and capture the output
-        result = subprocess.run(["ping", "-n", "1", host],
+        result = subprocess.run(["ping", "-c", "1", host],
                                  stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, check=True)
 
         # Parse the output to extract the round-trip time (RTT)
@@ -24,6 +24,6 @@ while time_elapsed <= time_limit:
         print(f"Latency to {host}: {latency} ms")
     else:
         print(f"Unable to detect latency to {host}")
-    time.sleep(10 - (time.time() - start_time) % 10)
+    time.sleep(5 - (time.time() - start_time) % 5)
     time_elapsed = time.time() - start_time
 
