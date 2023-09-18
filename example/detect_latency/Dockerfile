@@ -5,5 +5,5 @@ ADD ./detect_latency.py /
 RUN apt install iputils-ping -y
 RUN pip3 install requests
 
-CMD ["./detect_latency.py"]
+CMD ["./detect_latency.py", "172.21.0.3"]
 ENTRYPOINT ["python3"]
