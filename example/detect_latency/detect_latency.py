@@ -1,5 +1,6 @@
 import subprocess
 import time
+import sys
 
 
 def detect_latency(host):
@@ -18,7 +19,7 @@ def detect_latency(host):
         return None
 
 # Definiton of our host IP
-host = "www.amazon.com"
+host = sys.argv[1]
 # Set the amount of time the program will run for
 start_time = time.time()
 time_elapsed = 0
