@@ -14,6 +14,8 @@
 
   <!-- MEC Apps -->
   <mec_app name="server1" image="simple_server" ip="172.21.0.3" command=""/>
+  <ping_sender name="client" image="detect_latency" command=""/>
+  <ping_receiver name="host" image="simple_server" ip="172.21.0.3" command=""/>
 
   <link ue="ueA" mec_host="mecA" latency="0.10" upload="100Mbps" download="100Mbps" time="0"/>
   <link ue="ueA" mec_host="mecB" latency="0.20" upload="100Mbps" download="100Mbps" time="0"/>
