@@ -82,7 +82,7 @@ def parse_scenario(filename):
                             link_xml.attrib['download'],
                             time=float(link_xml.attrib['time'])))
 
-  return mec_hosts,UEs, mec_apps, links
+  return mec_hosts, UEs, mec_apps, ping_sender, ping_receiver, links
 
 def write_link_states(filename):
 
