@@ -14,7 +14,11 @@ def parse_scenario(filename):
   mec_apps = {}
 
   base_stations = {}
+  
+  ping_sender = {}
 
+  ping_receiver = {}
+  
   # Creating UEs
   for ue_xml in root.iter('ue'):
     # Creating UE Apps
@@ -54,6 +58,20 @@ def parse_scenario(filename):
 
     base_stations[bs.name] = bs
   """
+  # Creating PING sender
+  # Work in Progress
+  for ps_xml in root.iter("ping_sender"):
+    ping_sender[ps_xml.attrib['name']] = PythiaPingSender(ps_xml.attrib['name'], 
+                                                          ps_xml.attrib['image'],
+                                                          ps_xml.attrib['command'])
+
+  # Creating PING receiver (Currently the same as the MEC app)
+  # Work in Progress
+  for pr_xml in root.iter('mec_app'):
+    ping_receiver[pr_xml.attrib['name']] = PythiaMECApp(pr_xml.attrib['name'],
+                                 pr_xml.attrib['image'],
+                                 pr_xml.attrib['ip'],
+                                 pr_xml.attrib['command'])
   links = []
 
   for link_xml in root.iter('link'):
