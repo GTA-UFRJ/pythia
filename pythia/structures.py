@@ -12,15 +12,6 @@ class DockerContainer:
     self.id_str = id_converter.encode(self.id)
     self.image = image
 
-class PythiaPingSender(DockerContainer):
-  #Work in Progress
-  def __init__(self, name, image, command=""):
-    super().__init__(image)
-    self.host = None
-    self.name = name
-    self.command = command
-    self.docker_id = ""
-    self.ip = ""
 
 class PythiaApp(DockerContainer):
   def __init__(self, name, image, command=""):
