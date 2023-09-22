@@ -62,7 +62,7 @@ networks['infra'] = structures.PythiaNetwork(infra_network_name,
                                                 infra_network_interface)
 
 #Read experiment file
-mec_hosts, UEs, mec_apps, ping_sender, ping_receiver, links = \
+mec_hosts, UEs, mec_apps, links = \
   xml_parser.parse_scenario(scenario_filename)
 
 #Setting hosts images
@@ -81,7 +81,7 @@ for ue in UEs:
                           default_upload)"""
 
 #Bootstrap emulation
-emulation.bootstrap(networks, mec_hosts, mec_apps, ping_sender, ping_receiver, UEs)
+emulation.bootstrap(networks, mec_hosts, mec_apps,UEs)
 
 #Invoke emulation
 emulation.emulate(networks, links)
