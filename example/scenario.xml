@@ -5,7 +5,7 @@
   <!-- The file ueA_positions.csv represents a walk from 
   Triumph's arc to Tour Eiffel in 40 minutes -->
   <ue name="ueA" positions_file="example/ue1_positions.csv">
-    <ue_app name="client1" image="simple_client" command="simple_server:8080 1"/>
+    <ue_app name="ping_sender" image="detect_latency" command="172.21.0.3"/>
   </ue>
 
   <!-- MEC Hosts -->
@@ -15,12 +15,7 @@
   <!-- MEC Apps -->
   <mec_app name="server1" image="simple_server" ip="172.21.0.3" command=""/>
 
-  
-  <!-- PING Sender -->
-  <ping_sender name="client" image="detect_latency" command=""/>
-
-  <!-- PING Receiver -->
-  <ping_receiver name="host" image="simple_server" ip="172.21.0.3" command=""/>
+  <mec_app name="host" image="simple_server" ip="172.21.0.3" command=""/>
 
   <link ue="ueA" mec_host="mecA" latency="0.10" upload="100Mbps" download="100Mbps" time="0"/>
   <link ue="ueA" mec_host="mecB" latency="0.20" upload="100Mbps" download="100Mbps" time="0"/>
