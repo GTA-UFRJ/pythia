@@ -40,7 +40,7 @@ def emulate(networks, links):
     time.sleep(time_difference)
     print(f"Event = {event}")
 
-def bootstrap(networks, mec_hosts, mec_apps, ping_sender, ping_receiver, UEs):
+def bootstrap(networks, mec_hosts, mec_apps, UEs):
   # Need to create the ping_sender and ping_receiver containers.
   """This function bootstraps the emulation.
   It creates the emulation scenario inside docker, 
