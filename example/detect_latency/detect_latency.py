@@ -23,18 +23,18 @@ host = sys.argv[1]
 # Set the amount of time the program will run for
 start_time = time.time()
 time_elapsed = 0
-time_limit = 300
+time_limit = 25
 
 # Creation of output file
-output_file = open("output.txt", "a")
-while time_elapsed <= time_limit:
-    latency = detect_latency(host)
-    if latency is not None:
-        print(f"Latency to {host}: {latency}")
-        output_file.write(f"Latency to {host}: {latency}")
-    else:
-        print(f"Unable to detect latency to {host}")
-        output_file.write(f"Unable to detect latency to {host}")
-    # Execute the function every 5 seconds (half the period)  
-    time.sleep(5 - (time.time() - start_time) % 5)
-    time_elapsed = time.time() - start_time
+with open("output/output_file.txt", "a") as output_file:
+    while time_elapsed <= time_limit:
+        latency = detect_latency(host)
+        if latency is not None:
+            print(f"Latency to {host}: {latency}")
+            output_file.write(f"Latency to {host}: {latency}")
+        else:
+            print(f"Unable to detect latency to {host}")
+            output_file.write(f"Unable to detect latency to {host}")
+        # Execute the function every 5 seconds (half the period)  
+        time.sleep(5 - (time.time() - start_time) % 5)
+        time_elapsed = time.time() - start_time
