@@ -40,8 +40,10 @@ def create_external_app(app,network):
   """
   logging.info(f"Creating container {app.docker_id} from {app.image}, "+
       f"with ip={app.ip}.")
+  client.volumes.create(name="test_vol")   
   client.containers.create(app.image,
                            name=app.docker_id,
+                           volumes=["test_vol:/output"],
                            cap_add=["NET_ADMIN"])
   connect(app, network, app.ip)
 
