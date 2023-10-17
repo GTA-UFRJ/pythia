@@ -2,6 +2,12 @@ import subprocess
 import time
 import sys
 
+# Definiton of our host IP
+host = sys.argv[1]
+# Set the amount of time the program will run for
+start_time = time.time()
+time_elapsed = 0
+time_limit = 600
 
 def detect_latency(host):
     try:
@@ -18,12 +24,6 @@ def detect_latency(host):
         # This handles the case where the ping command fails (e.g., host is unreachable)
         return None
 
-# Definiton of our host IP
-host = sys.argv[1]
-# Set the amount of time the program will run for
-start_time = time.time()
-time_elapsed = 0
-time_limit = 25
 
 # Creation of output file
 with open("output/output_file.txt", "a") as output_file:
@@ -36,5 +36,5 @@ with open("output/output_file.txt", "a") as output_file:
             print(f"Unable to detect latency to {host}")
             output_file.write(f"Unable to detect latency to {host}")
         # Execute the function every 5 seconds (half the period)  
-        time.sleep(5 - (time.time() - start_time) % 5)
+        time.sleep(5)
         time_elapsed = time.time() - start_time
