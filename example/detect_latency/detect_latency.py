@@ -2,14 +2,18 @@ import subprocess
 import time
 import sys
 
+
+time.sleep(1)
 # Definiton of our host IP
 host = sys.argv[1]
 # Set the amount of time the program will run for
-start_time = time.time()
-time_elapsed = 0
-time_limit = 600
+startTime = time.time()
+timeElapsed = 0
+timeLimit = 50
 
-def detect_latency(host):
+def DetectLatency(host):
+    timeOfRequest = time.localtime()
+    timeOfRequest = time.strftime("%H:%M:%S", timeOfRequest)
     try:
         # Run the ping command with a single ping and capture the output. 
         result = subprocess.run(["ping", "-c", "1", host],
@@ -18,23 +22,21 @@ def detect_latency(host):
         # change it to "-n"
         # Parse the output to extract the minimum, maximum and average round-trip time (RTT)
         lines = result.stdout.splitlines()
-        rtt_line = lines[-1]  # Assuming the last line contains RTT information
-        return rtt_line
+        rttLine = lines[-1]  # Assuming the last line contains RTT information
+        return rttLine, timeOfRequest
     except subprocess.CalledProcessError:
         # This handles the case where the ping command fails (e.g., host is unreachable)
-        return None
+        return None, timeOfRequest
 
 
 # Creation of output file
 with open("output/output_file.txt", "a") as output_file:
-    while time_elapsed <= time_limit:
-        latency = detect_latency(host)
+    while timeElapsed <= timeLimit:
+        latency, currentTime = DetectLatency(host)
         if latency is not None:
-            print(f"Latency to {host}: {latency}")
-            output_file.write(f"Latency to {host}: {latency}")
+            output_file.write(f"{currentTime} - Latency to {host}: {latency}\n")
         else:
-            print(f"Unable to detect latency to {host}")
-            output_file.write(f"Unable to detect latency to {host}")
+            output_file.write(f"{currentTime} - Unable to detect latency to {host}\n")
         # Execute the function every 5 seconds (half the period)  
         time.sleep(5)
-        time_elapsed = time.time() - start_time
+        timeElapsed = time.time() - startTime
