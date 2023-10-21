@@ -22,7 +22,7 @@ def DetectLatency(host):
         # change it to "-n"
         # Parse the output to extract the minimum, maximum and average round-trip time (RTT)
         lines = result.stdout.splitlines()
-        rttLine = lines[-1]  # Assuming the last line contains RTT information
+        rttLine = lines
         return rttLine, timeOfRequest
     except subprocess.CalledProcessError:
         # This handles the case where the ping command fails (e.g., host is unreachable)
