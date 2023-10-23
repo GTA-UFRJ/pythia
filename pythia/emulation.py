@@ -27,6 +27,7 @@ def emulate(networks, links):
     emulation_time = time.time() - emulation_zero
     time_difference = event.time - emulation_time
     if time_difference < emulation_time_error:
+      logging.info(f"Event time = {event.time}, emu time = {emulation_time}, Time diff = {time_difference}")
       for ue_app in event.ue.apps:
         for mec_app in event.mec_host.active_apps:
           docker_utils.change_link(ue_app, mec_app,
@@ -34,10 +35,9 @@ def emulate(networks, links):
                            event.upload, event.latency)
       event = events_queue.pop()
       time_difference = event.time - emulation_time
-    logging.info(f"Event time = {event.time}, emu time = {emulation_time}, Time diff = {time_difference}")
     if time_difference < 0:
       continue
-    time.sleep(time_difference)
+    time.sleep(time_difference - emulation_time_error/2)
     print(f"Event = {event}")
 
 def bootstrap(networks, mec_hosts, mec_apps, UEs):
