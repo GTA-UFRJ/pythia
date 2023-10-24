@@ -1,6 +1,7 @@
 import subprocess
 import time
 import sys
+from datetime import datetime
 
 
 time.sleep(1)
@@ -12,8 +13,8 @@ timeElapsed = 0
 timeLimit = 50
 
 def DetectLatency(host):
-    timeOfRequest = time.localtime()
-    timeOfRequest = time.strftime("%H:%M:%S", timeOfRequest)
+    timeOfRequest = datetime.now()
+    timeOfRequest = timeOfRequest.strftime("%H:%M:%S.%f")[:-3]
     try:
         # Run the ping command with a single ping and capture the output. 
         result = subprocess.run(["ping", "-c", "1", host],
