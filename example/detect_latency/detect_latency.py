@@ -23,7 +23,11 @@ def DetectLatency(host):
         # change it to "-n"
         # Parse the output to extract the minimum, maximum and average round-trip time (RTT)
         lines = result.stdout.splitlines()
-        rttLine = lines
+        # Assuming the last element contains RTT data
+        rttLine = lines[-1]
+        # Since it's a single request, minimum, maximum and average round-trip time are all the same,
+        # so we can pick one
+        rttLine = rttLine.split("/")[4]
         return rttLine, timeOfRequest
     except subprocess.CalledProcessError:
         # This handles the case where the ping command fails (e.g., host is unreachable)
@@ -36,8 +40,10 @@ with open("output/output_file.txt", "a") as output_file:
         latency, currentTime = DetectLatency(host)
         if latency is not None:
             output_file.write(f"{currentTime} - Latency to {host}: {latency}\n")
+            output_file.flush()
         else:
             output_file.write(f"{currentTime} - Unable to detect latency to {host}\n")
+            output_file.flush()
         # Execute the function every 5 seconds (half the period)  
         time.sleep(5)
         timeElapsed = time.time() - startTime
