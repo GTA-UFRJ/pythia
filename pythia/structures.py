@@ -14,13 +14,14 @@ class DockerContainer:
 
 
 class PythiaApp(DockerContainer):
-  def __init__(self, name, image, command=""):
+  def __init__(self, name, image, command="", volume = False):
     super().__init__(image)
     self.host = None
     self.name = name
     self.command = command
     self.docker_id = ""
     self.ip = ""
+    self.volume = volume
 
 class PythiaMECApp(PythiaApp):
   def __init__(self, name, image, ip, command=""):
