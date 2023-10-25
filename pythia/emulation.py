@@ -9,8 +9,11 @@ import pythia.docker_utils as docker_utils
 import logging
 import sys
 import time
+import docker
+
 
 logging.basicConfig(level=logging.INFO)
+client = docker.from_env()
 
 def emulate(networks, links):
   """This function runs the emulation phase of Pythia"""
@@ -79,6 +82,7 @@ def bootstrap(networks, mec_hosts, mec_apps, UEs):
     for ue_app in UEs[vUE].apps:
       ue_app.ip = networks['ue'].allocate_ip()
       ue_app.host = UEs[vUE]
+      client.volumes.create(name=ue_app.volume)
       docker_utils.create_external_app(ue_app, networks['ue'])
       docker_utils.start_container(ue_app)
       docker_utils.connect_app_to_host(ue_app)
