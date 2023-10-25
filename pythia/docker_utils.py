@@ -42,7 +42,7 @@ def create_external_app(app,network):
       f"with ip={app.ip}.")
   client.containers.create(app.image,
                            name=app.docker_id,
-                           volumes=app.volume,
+                           volumes=[app.volume+":/output"],
                            cap_add=["NET_ADMIN"])
   connect(app, network, app.ip)
 
