@@ -24,7 +24,8 @@ def parse_scenario(filename):
     for ue_app_tag in ue_xml.iter('ue_app'):
       ue.apps.append(PythiaUEApp(ue_app_tag.attrib['name'],
                                  ue_app_tag.attrib['image'],
-                                 ue_app_tag.attrib['command']))
+                                 ue_app_tag.attrib['command']
+                                ue_app_tag.attrib.get(volume, False))
     UEs[ue.name] = ue
 
   #Creating MEC hosts
