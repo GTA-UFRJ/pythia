@@ -5,7 +5,7 @@
   <!-- The file ueA_positions.csv represents a walk from 
   Triumph's arc to Tour Eiffel in 40 minutes -->
   <ue name="ueA" positions_file="example/ue1_positions.csv">
-    <ue_app name="ping_sender" image="detect_latency" command="172.21.0.3"/>
+    <ue_app name="ping_sender" image="detect_latency" command="172.21.0.3" volume = "test_vol"/>
   </ue>
 
   <!-- MEC Hosts -->
