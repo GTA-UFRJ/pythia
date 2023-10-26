@@ -16,13 +16,14 @@
  
   <mec_app name="host" image="simple_server" ip="172.21.0.3" command=""/>
 
-  <link ue="ueA" mec_host="mecA" latency="0.10" upload="100Mbps" download="100Mbps" time="0"/>
-  <link ue="ueA" mec_host="mecB" latency="0.20" upload="100Mbps" download="100Mbps" time="0"/>
+  <link ue="ueA" mec_host="mecA" latency="500.0" upload="5000" download="100Mbps" time="0"/>
+  <link ue="ueA" mec_host="mecB" latency="500.0" upload="5000" download="100Mbps" time="0"/>
 
-  <link ue="ueA" mec_host="mecA" latency="0.50" upload="100Mbps" download="100Mbps" time="10"/>
-  <link ue="ueA" mec_host="mecB" latency="0.10" upload="100Mbps" download="100Mbps" time="10"/>
+  <link ue="ueA" mec_host="mecA" latency="1000.50" upload="5000" download="100Mbps" time="10"/>
+  <link ue="ueA" mec_host="mecB" latency="1000.10" upload="5000" download="100Mbps" time="10"/>
 
-  <link ue="ueA" mec_host="mecA" latency="1.0" upload="100Mbps" download="100Mbps" time="20"/>
-  <link ue="ueA" mec_host="mecB" latency="0.20" upload="100Mbps" download="100Mbps" time="20"/>
+  <link ue="ueA" mec_host="mecA" latency="2000.0" upload="5000" download="100Mbps" time="20"/>
+  <link ue="ueA" mec_host="mecB" latency="2000.20" upload="5000" download="100Mbps" time="20"/>
 
 </experiment>
+
