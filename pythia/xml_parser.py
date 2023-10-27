@@ -14,7 +14,8 @@ def parse_scenario(filename):
   mec_apps = {}
 
   base_stations = {}
-
+  
+  
   # Creating UEs
   for ue_xml in root.iter('ue'):
     # Creating UE Apps
@@ -23,7 +24,8 @@ def parse_scenario(filename):
     for ue_app_tag in ue_xml.iter('ue_app'):
       ue.apps.append(PythiaUEApp(ue_app_tag.attrib['name'],
                                  ue_app_tag.attrib['image'],
-                                 ue_app_tag.attrib['command']))
+                                 ue_app_tag.attrib['command']
+                                ue_app_tag.attrib['volume']))
     UEs[ue.name] = ue
 
   #Creating MEC hosts
@@ -54,6 +56,7 @@ def parse_scenario(filename):
 
     base_stations[bs.name] = bs
   """
+
   links = []
 
   for link_xml in root.iter('link'):
@@ -64,7 +67,7 @@ def parse_scenario(filename):
                             link_xml.attrib['download'],
                             time=float(link_xml.attrib['time'])))
 
-  return mec_hosts,UEs, mec_apps, links
+  return mec_hosts, UEs, mec_apps, links
 
 def write_link_states(filename):
 
