@@ -151,37 +151,17 @@ def change_link(ue_app, mec_app,
 
 def change_link_on_host(host, ip_dst, interface,
                         bitrate, delay):
-
-  add_cmds = [f"tc qdisc add dev {interface} root handle 1: prio",
-  f"tc qdisc add dev {interface} parent 1:3 "+
+  
+  cmds = [f"tc qdisc replace dev {interface} root handle 1: prio",
+  f"tc qdisc replace dev {interface} parent 1:3 "+
   f"handle 30: tbf rate {bitrate}kbit buffer 1600 limit 3000",
 
-  f"tc qdisc add dev {interface} parent 30:1 "+
+  f"tc qdisc replace dev {interface} parent 30:1 "+
   f"handle 31: netem delay {delay}ms",
   
+  f"tc filter replace dev {interface} protocol ip parent 1: prio 3 "+
+  f"u32 match ip dst {ip_dst} flowid 1:3"]
 
-  f"tc filter add dev {interface} protocol ip parent "+
-  f"1:0 prio 3 u32 match ip dst {ip_dst} flowid 1:3"]
-
-  change_cmds = [f"tc qdisc change dev {interface} root handle 1: prio",
-  f"tc qdisc change dev {interface} parent 1:3 "+
-  f"handle 30: tbf rate {bitrate}kbit buffer 1600 limit 3000",
-
-  f"tc qdisc change dev {interface} parent 30:1 "+
-  f"handle 31: netem delay 0ms",
-  
-
-  f"tc filter change dev {interface} protocol ip parent "+
-  f"1:0 prio 3 u32 match ip dst {ip_dst} flowid 1:3"]
-
-  #logging.info(f"=== Executing commands on {host.docker_id}")
-  problem = False
-  for cmd in change_cmds:
-    #logging.info(cmd)
+  for cmd in cmds:
     result = str(execute_cmd(cmd, host.docker_id).output)
     logging.info(result)
-    if ("Qdisc not found" in result):
-      problem = True
-  if problem:
-    for cmd in add_cmds:
-      logging.info(execute_cmd(cmd, host.docker_id))
