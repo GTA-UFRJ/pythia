@@ -104,14 +104,6 @@ def bootstrap(networks, mec_hosts, mec_apps, UEs):
     docker_utils.start_container(mec_apps[mec_app])
     docker_utils.connect_app_to_host(mec_apps[mec_app])
 
-  #Testing netem:
-  #TODO: change this
-  ue_app = UEs[list(UEs.keys())[0]].apps[0]
-  mec_app = mec_apps[list(mec_apps.keys())[0]]
-  docker_utils.change_link(ue_app, mec_app,
-                           networks['ue'], networks['mec'],
-                           5000, 500, 10)
-
 """
 def start(mec_hosts, UEs, mec_apps):
   for vmh in mec_hosts:
