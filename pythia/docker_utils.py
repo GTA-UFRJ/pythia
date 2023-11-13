@@ -32,6 +32,11 @@ def start_container(container):
   c = client.containers.get(container.docker_id)
   c.start()
 
+def create_volume(app):
+  """This function creates a volume without attaching it to a
+  container"""
+  client.volumes.create(name = app.volume)
+
 def create_external_app(app,network):
   """This function creates an app container without running it.
   Parameters:
@@ -39,7 +44,7 @@ def create_external_app(app,network):
     host: the PythiaApp object 
   """
   logging.info(f"Creating container {app.docker_id} from {app.image}, "+
-      f"with ip={app.ip}.")
+      f"with ip={app.ip}.")   
   client.containers.create(app.image,
                            name=app.docker_id,
                            volumes=[app.volume+":/output"],
@@ -139,16 +144,15 @@ def change_link(ue_app, mec_app,
   bitrate is on kbits
   delay and distribution are in ms.
   """
-
+  logging.info("Vou mudar")
   #Execute on host a
   change_link_on_host(ue_app, mec_app.ip, ue_network.interface,
-                      bitrate, delay)
+                      bitrate, float(delay)/2)
 
   #Execute on host b
   change_link_on_host(mec_app, ue_app.ip, mec_network.interface,
-                      bitrate, delay)
-
-
+                      bitrate, float(delay)/2)
+  logging.info("Mudei")
 def change_link_on_host(host, ip_dst, interface,
                         bitrate, delay):
   
