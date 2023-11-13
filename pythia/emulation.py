@@ -11,9 +11,7 @@ import sys
 import time
 import docker
 
-
 logging.basicConfig(level=logging.INFO)
-client = docker.from_env()
 
 def emulate(networks, links):
   """This function runs the emulation phase of Pythia"""
@@ -21,12 +19,11 @@ def emulate(networks, links):
   #Create emulation events queue
   events_queue = links
   events_queue.sort(key=lambda x: x.time, reverse=True)
-  
   emulation_zero = time.time()
   emulation_time_error = 0.3
   event = events_queue.pop()
   #Start main emulation loop
-  while(len(events_queue)):
+  while(len(events_queue)+1):
     emulation_time = time.time() - emulation_zero
     time_difference = event.time - emulation_time
     if time_difference < emulation_time_error:
@@ -36,7 +33,10 @@ def emulate(networks, links):
           docker_utils.change_link(ue_app, mec_app,
                              networks['ue'], networks['mec'],
                            event.upload, event.latency)
-      event = events_queue.pop()
+      try:
+        event = events_queue.pop()
+      except:
+        break
       time_difference = event.time - emulation_time
     if time_difference < 0:
       continue
@@ -82,7 +82,7 @@ def bootstrap(networks, mec_hosts, mec_apps, UEs):
     for ue_app in UEs[vUE].apps:
       ue_app.ip = networks['ue'].allocate_ip()
       ue_app.host = UEs[vUE]
-      client.volumes.create(name=ue_app.volume)
+      docker_utils.create_volume(ue_app)
       docker_utils.create_external_app(ue_app, networks['ue'])
       docker_utils.start_container(ue_app)
       docker_utils.connect_app_to_host(ue_app)
@@ -103,14 +103,13 @@ def bootstrap(networks, mec_hosts, mec_apps, UEs):
     #Isso deveria estar aqui??
     docker_utils.start_container(mec_apps[mec_app])
     docker_utils.connect_app_to_host(mec_apps[mec_app])
-
   #Testing netem:
   #TODO: change this
-  ue_app = UEs[list(UEs.keys())[0]].apps[0]
+  """ue_app = UEs[list(UEs.keys())[0]].apps[0]
   mec_app = mec_apps[list(mec_apps.keys())[0]]
   docker_utils.change_link(ue_app, mec_app,
                            networks['ue'], networks['mec'],
-                           5000, 500, 10)
+                           5000, 4000, 10)"""
 
 """
 def start(mec_hosts, UEs, mec_apps):
