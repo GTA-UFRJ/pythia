@@ -32,6 +32,11 @@ def start_container(container):
   c = client.containers.get(container.docker_id)
   c.start()
 
+def create_volume(app):
+  """This function creates a volume without attaching it to a
+  container"""
+  client.volumes.create(name = app.volume)
+
 def create_external_app(app,network):
   """This function creates an app container without running it.
   Parameters:
@@ -39,7 +44,7 @@ def create_external_app(app,network):
     host: the PythiaApp object 
   """
   logging.info(f"Creating container {app.docker_id} from {app.image}, "+
-      f"with ip={app.ip}.")
+      f"with ip={app.ip}.")   
   client.containers.create(app.image,
                            name=app.docker_id,
                            volumes=[app.volume+":/output"],
@@ -139,49 +144,28 @@ def change_link(ue_app, mec_app,
   bitrate is on kbits
   delay and distribution are in ms.
   """
-
+  logging.info("Vou mudar")
   #Execute on host a
   change_link_on_host(ue_app, mec_app.ip, ue_network.interface,
-                      bitrate, delay)
+                      bitrate, float(delay)/2)
 
   #Execute on host b
   change_link_on_host(mec_app, ue_app.ip, mec_network.interface,
-                      bitrate, delay)
-
-
+                      bitrate, float(delay)/2)
+  logging.info("Mudei")
 def change_link_on_host(host, ip_dst, interface,
                         bitrate, delay):
-
-  add_cmds = [f"tc qdisc add dev {interface} root handle 1: prio",
-  f"tc qdisc add dev {interface} parent 1:3 "+
+  
+  cmds = [f"tc qdisc replace dev {interface} root handle 1: prio",
+  f"tc qdisc replace dev {interface} parent 1:3 "+
   f"handle 30: tbf rate {bitrate}kbit buffer 1600 limit 3000",
 
-  f"tc qdisc add dev {interface} parent 30:1 "+
+  f"tc qdisc replace dev {interface} parent 30:1 "+
   f"handle 31: netem delay {delay}ms",
   
+  f"tc filter replace dev {interface} protocol ip parent 1: prio 3 "+
+  f"u32 match ip dst {ip_dst} flowid 1:3"]
 
-  f"tc filter add dev {interface} protocol ip parent "+
-  f"1:0 prio 3 u32 match ip dst {ip_dst} flowid 1:3"]
-
-  change_cmds = [f"tc qdisc change dev {interface} root handle 1: prio",
-  f"tc qdisc change dev {interface} parent 1:3 "+
-  f"handle 30: tbf rate {bitrate}kbit buffer 1600 limit 3000",
-
-  f"tc qdisc change dev {interface} parent 30:1 "+
-  f"handle 31: netem delay 0ms",
-  
-
-  f"tc filter change dev {interface} protocol ip parent "+
-  f"1:0 prio 3 u32 match ip dst {ip_dst} flowid 1:3"]
-
-  #logging.info(f"=== Executing commands on {host.docker_id}")
-  problem = False
-  for cmd in change_cmds:
-    #logging.info(cmd)
+  for cmd in cmds:
     result = str(execute_cmd(cmd, host.docker_id).output)
     logging.info(result)
-    if ("Qdisc not found" in result):
-      problem = True
-  if problem:
-    for cmd in add_cmds:
-      logging.info(execute_cmd(cmd, host.docker_id))
