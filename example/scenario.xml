@@ -5,7 +5,13 @@
   <!-- The file ueA_positions.csv represents a walk from 
   Triumph's arc to Tour Eiffel in 40 minutes -->
   <ue name="ueA" positions_file="example/ue1_positions.csv">
-    <ue_app name="ping_sender" image="detect_latency" command="172.21.0.3" volume="test_vol"/>
+    <!--ue_app name="ping_sender" image="ping_client" command="172.21.0.3" volume="test_vol"/-->
+    <ue_app name="ping_sender" image="ping_client" command="172.21.0.3" volume="test_vol"/>
+  </ue>
+
+
+  <ue name="ueB" positions_file="example/ue1_positions.csv">
+    <ue_app name="ping_sender" image="ping_client" command="172.21.0.3" volume="test_vol"/>
   </ue>
 
   <!-- MEC Hosts -->
@@ -19,11 +25,11 @@
   <link ue="ueA" mec_host="mecA" latency="500.0" upload="5000" download="100Mbps" time="0"/>
   <link ue="ueA" mec_host="mecB" latency="500.0" upload="5000" download="100Mbps" time="0"/>
 
-  <link ue="ueA" mec_host="mecA" latency="1000.50" upload="5000" download="100Mbps" time="10"/>
-  <link ue="ueA" mec_host="mecB" latency="1000.10" upload="5000" download="100Mbps" time="10"/>
+  <link ue="ueB" mec_host="mecA" latency="1000.50" upload="5000" download="100Mbps" time="0"/>
+  <link ue="ueB" mec_host="mecB" latency="1000.10" upload="5000" download="100Mbps" time="0"/>
 
-  <link ue="ueA" mec_host="mecA" latency="2000.0" upload="5000" download="100Mbps" time="20"/>
-  <link ue="ueA" mec_host="mecB" latency="2000.20" upload="5000" download="100Mbps" time="20"/>
+  <!--link ue="ueA" mec_host="mecA" latency="2000.0" upload="5000" download="100Mbps" time="20"/>
+  <link ue="ueA" mec_host="mecB" latency="2000.20" upload="5000" download="100Mbps" time="20"/-->
 
 </experiment>
 

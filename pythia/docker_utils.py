@@ -44,11 +44,18 @@ def create_external_app(app,network):
     host: the PythiaApp object 
   """
   logging.info(f"Creating container {app.docker_id} from {app.image}, "+
-      f"with ip={app.ip}.")   
-  client.containers.create(app.image,
-                           name=app.docker_id,
-                           volumes=[app.volume+":/output"],
-                           cap_add=["NET_ADMIN"])
+      f"with ip={app.ip}.")
+  if(app.volume):
+    client.containers.create(app.image,
+                             name=app.docker_id,
+                             volumes=[app.volume+":/output"],
+                             command=app.command,
+                             cap_add=["NET_ADMIN"])
+  else:
+    client.containers.create(app.image,
+                             name=app.docker_id,
+                             command=app.command,
+                             cap_add=["NET_ADMIN"])
   connect(app, network, app.ip)
 
 
@@ -136,23 +143,28 @@ def execute_cmd(cmd, container_id):
   container = client.containers.get(container_id)
   return container.exec_run(cmd)
 
-def change_link(ue_app, mec_app,
-                ue_network, mec_network,
+
+
+
+
+def change_link(vUE, vmec_host,
+                network,
                 bitrate, delay, distribution=0):
   """
   This function changes the link between two pythia apps.
   bitrate is on kbits
   delay and distribution are in ms.
   """
-  logging.info("Vou mudar")
+  #logging.info("Vou mudar")
   #Execute on host a
-  change_link_on_host(ue_app, mec_app.ip, ue_network.interface,
+  change_link_on_host(vUE, vmec_host.infra_ip, network.interface,
                       bitrate, float(delay)/2)
 
   #Execute on host b
-  change_link_on_host(mec_app, ue_app.ip, mec_network.interface,
+  change_link_on_host(vmec_host, vUE.infra_ip, network.interface,
                       bitrate, float(delay)/2)
-  logging.info("Mudei")
+  #logging.info("Mudei")
+
 def change_link_on_host(host, ip_dst, interface,
                         bitrate, delay):
   
@@ -168,4 +180,41 @@ def change_link_on_host(host, ip_dst, interface,
 
   for cmd in cmds:
     result = str(execute_cmd(cmd, host.docker_id).output)
-    logging.info(result)
+    #logging.info(result)
+
+
+def old_change_link(ue_app, mec_app,
+                ue_network, mec_network,
+                bitrate, delay, distribution=0):
+  """
+  This function changes the link between two pythia apps.
+  bitrate is on kbits
+  delay and distribution are in ms.
+  """
+  logging.info("Vou mudar")
+  #Execute on host a
+  old_change_link_on_host(ue_app, mec_app.ip, ue_network.interface,
+                      bitrate, float(delay)/2)
+
+  #Execute on host b
+  old_change_link_on_host(mec_app, ue_app.ip, mec_network.interface,
+                      bitrate, float(delay)/2)
+  logging.info("Mudei")
+
+
+def old_change_link_on_host(host, ip_dst, interface,
+                        bitrate, delay):
+  
+  cmds = [f"tc qdisc replace dev {interface} root handle 1: prio",
+  f"tc qdisc replace dev {interface} parent 1:3 "+
+  f"handle 30: tbf rate {bitrate}kbit buffer 1600 limit 3000",
+
+  f"tc qdisc replace dev {interface} parent 30:1 "+
+  f"handle 31: netem delay {delay}ms",
+  
+  f"tc filter replace dev {interface} protocol ip parent 1: prio 3 "+
+  f"u32 match ip dst {ip_dst} flowid 1:3"]
+
+  for cmd in cmds:
+    result = str(execute_cmd(cmd, host.docker_id).output)
+    #logging.info(result)

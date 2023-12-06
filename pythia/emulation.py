@@ -28,11 +28,18 @@ def emulate(networks, links):
     time_difference = event.time - emulation_time
     if time_difference < emulation_time_error:
       logging.info(f"Event time = {event.time}, emu time = {emulation_time}, Time diff = {time_difference}")
+      """
       for ue_app in event.ue.apps:
         for mec_app in event.mec_host.active_apps:
-          docker_utils.change_link(ue_app, mec_app,
+          docker_utils.old_change_link(ue_app, mec_app,
                              networks['ue'], networks['mec'],
-                           event.upload, event.latency)
+                           event.upload, event.latency) #"""
+      ####
+      #"""
+      docker_utils.change_link(event.ue, event.mec_host,
+                               networks['infra'],
+                               event.upload, event.latency) #"""
+      ####
       try:
         event = events_queue.pop()
       except:
@@ -83,7 +90,7 @@ def bootstrap(networks, mec_hosts, mec_apps, UEs):
       ue_app.ip = networks['ue'].allocate_ip()
       ue_app.host = UEs[vUE]
       docker_utils.create_volume(ue_app)
-      docker_utils.create_external_app(ue_app, networks['ue'])
+      docker_utils.create_ue_app(ue_app, networks['ue'])
       docker_utils.start_container(ue_app)
       docker_utils.connect_app_to_host(ue_app)
 
