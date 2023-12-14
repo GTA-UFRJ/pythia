@@ -168,15 +168,14 @@ def change_link(vUE, vmec_host,
 def change_link_on_host(host, ip_dst, interface,
                         bitrate, delay):
   
-  cmds = [f"tc qdisc replace dev {interface} root handle 1: prio",
-  f"tc qdisc replace dev {interface} parent 1:3 "+
-  f"handle 30: tbf rate {bitrate}kbit buffer 1600 limit 3000",
-
-  f"tc qdisc replace dev {interface} parent 30:1 "+
-  f"handle 31: netem delay {delay}ms",
-  
-  f"tc filter replace dev {interface} protocol ip parent 1: prio 3 "+
-  f"u32 match ip dst {ip_dst} flowid 1:3"]
+  cmds = [f"tc qdisc replace dev {interface} root handle 1: "+
+  f" htb default 10",
+  f"tc class replace dev {interface} parent 1:0 "+
+  f"classid 1:10 htb rate {bitrate}kbps ceil 640kbps prio 0",
+  f"tc qdisc add dev {interface} parent 1:10 handle "+
+  f"{host.queue_name.get(ip_dst)} netem delay {delay}ms",
+  f"tc filter replace dev {interface} parent 1:0 prio 0 "+
+  f"u32 match ip dst {ip_dst} flowid 1:10"]
 
   for cmd in cmds:
     result = str(execute_cmd(cmd, host.docker_id).output)
