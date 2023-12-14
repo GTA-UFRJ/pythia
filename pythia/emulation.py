@@ -23,7 +23,7 @@ def emulate(networks, links):
   emulation_time_error = 0.3
   event = events_queue.pop()
   #Start main emulation loop
-  while(len(events_queue)+1):
+  while(True):
     emulation_time = time.time() - emulation_zero
     time_difference = event.time - emulation_time
     if time_difference < emulation_time_error:
@@ -97,6 +97,7 @@ def bootstrap(networks, mec_hosts, mec_apps, UEs):
   #Start MEC apps. Allocate them to first host
   #Todo: start MEC Apps through MEC System.
   mec_host = mec_hosts[list(mec_hosts.keys())[0]]
+  queue_number = 1
   for mec_app in mec_apps:
     mec_apps[mec_app].host = mec_host
     mec_host.active_apps.add(mec_apps[mec_app])
@@ -104,6 +105,9 @@ def bootstrap(networks, mec_hosts, mec_apps, UEs):
 
     #Set route to this mec_app
     for vUE in UEs:
+      vUE.add_new_peer(mec_host.docker_id, str(queue_number))
+      mec_host.add_new_peer(vUE.docker_id, str(queue_number))
+      queue_number += 1
       for ue_app in UEs[vUE].apps:
         docker_utils.connect_app_to_app(ue_app, mec_apps[mec_app])
 
