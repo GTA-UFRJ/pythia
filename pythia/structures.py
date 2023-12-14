@@ -49,7 +49,10 @@ class PythiaEmulationHost(DockerContainer):
     #The ip to connect to MEC/UE apps
     self.external_ip = ""
     self.docker_id = "" # id or name in docker
-
+    self.queue_name = queue_name
+  def add_new_peer(self, other_docker_id, queue_number):
+    if (other_docker_id not in self.queue_name):
+      self.queue_name[other_docker_id] = f"1:{queue_number}"
 
 
 class PythiaUEHost(PythiaEmulationHost):
