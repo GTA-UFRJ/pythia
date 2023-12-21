@@ -22,28 +22,20 @@ def emulate(networks, links):
   emulation_zero = time.time()
   emulation_time_error = 0.3
   event = events_queue.pop()
+  queue_number = 1
   #Start main emulation loop
-  while(True):
+  while(len(events_queue)):
     emulation_time = time.time() - emulation_zero
     time_difference = event.time - emulation_time
     if time_difference < emulation_time_error:
       logging.info(f"Event time = {event.time}, emu time = {emulation_time}, Time diff = {time_difference}")
-      """
-      for ue_app in event.ue.apps:
-        for mec_app in event.mec_host.active_apps:
-          docker_utils.old_change_link(ue_app, mec_app,
-                             networks['ue'], networks['mec'],
-                           event.upload, event.latency) #"""
-      ####
-      #"""
+      event.ue.add_new_peer(event.mec_host.infra_ip, str(queue_number))
+      event.mec_host.add_new_peer(event.ue.infra_ip, str(queue_number))
+      queue_number += 1
       docker_utils.change_link(event.ue, event.mec_host,
                                networks['infra'],
                                event.upload, event.latency) #"""
-      ####
-      try:
-        event = events_queue.pop()
-      except:
-        break
+      event = events_queue.pop()
       time_difference = event.time - emulation_time
     if time_difference < 0:
       continue
@@ -97,7 +89,6 @@ def bootstrap(networks, mec_hosts, mec_apps, UEs):
   #Start MEC apps. Allocate them to first host
   #Todo: start MEC Apps through MEC System.
   mec_host = mec_hosts[list(mec_hosts.keys())[0]]
-  queue_number = 1
   for mec_app in mec_apps:
     mec_apps[mec_app].host = mec_host
     mec_host.active_apps.add(mec_apps[mec_app])
@@ -105,9 +96,6 @@ def bootstrap(networks, mec_hosts, mec_apps, UEs):
 
     #Set route to this mec_app
     for vUE in UEs:
-      vUE.add_new_peer(mec_host.docker_id, str(queue_number))
-      mec_host.add_new_peer(vUE.docker_id, str(queue_number))
-      queue_number += 1
       for ue_app in UEs[vUE].apps:
         docker_utils.connect_app_to_app(ue_app, mec_apps[mec_app])
 
