@@ -22,19 +22,17 @@ def emulate(networks, links):
   emulation_zero = time.time()
   emulation_time_error = 0.3
   event = events_queue.pop()
-  queue_number = 1
   #Start main emulation loop
   while(len(events_queue)):
     emulation_time = time.time() - emulation_zero
     time_difference = event.time - emulation_time
     if time_difference < emulation_time_error:
       logging.info(f"Event time = {event.time}, emu time = {emulation_time}, Time diff = {time_difference}")
-      event.ue.add_new_peer(event.mec_host.infra_ip, str(queue_number))
-      event.mec_host.add_new_peer(event.ue.infra_ip, str(queue_number))
-      queue_number += 1
+      event.mec_host.add_new_peer(event.ue.infra_ip)
+      event.ue.add_new_peer(event.mec_host.infra_ip)
       docker_utils.change_link(event.ue, event.mec_host,
                                networks['infra'],
-                               event.upload, event.latency) #"""
+                               event.upload, event.latency)
       event = events_queue.pop()
       time_difference = event.time - emulation_time
     if time_difference < 0:
