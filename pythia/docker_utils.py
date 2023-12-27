@@ -167,20 +167,14 @@ def change_link(vUE, vmec_host,
 
 def change_link_on_host(host, ip_dst, interface,
                         bitrate, delay):
-  
-  cmds = [f"tc qdisc replace dev {interface} root handle 1: "+
-  f" htb default 10",
-  f"tc class replace dev {interface} parent 1:0 "+
-  f"classid 1:10 htb rate {bitrate}kbps ceil 640kbps prio 0",
-  f"tc qdisc add dev {interface} parent 1:10 handle "+
-  f"{host.queue_name.get(ip_dst)} netem delay {delay}ms",
-  f"tc filter replace dev {interface} parent 1:0 prio 0 "+
-  f"u32 match ip dst {ip_dst} flowid 1:10"]
 
+  queue = host.queue_name.get(ip_dst)
+  cmds = [f"tc qdisc replace dev {interface} root handle 1: htb default 1", 
+            f"tc class replace dev {interface} parent 1: classid {queue} htb rate {bitrate} ceil 640kbps",
+            f"tc filter replace dev {interface} parent 1:0 prio 0 protocol ip u32 match ip dst {ip_dst} flowid {queue}",
+            f"tc qdisc replace dev {interface} parent {queue} netem delay {delay}ms"]
   for cmd in cmds:
-    result = str(execute_cmd(cmd, host.docker_id).output)
-    #logging.info(result)
-
+    execute_cmd(cmd, host.docker_id)
 
 def old_change_link(ue_app, mec_app,
                 ue_network, mec_network,
