@@ -175,7 +175,7 @@ def change_link_on_host(host, dst, interface,
     for app in dst.active_apps:
       cmds = [f"tc qdisc replace dev {interface} root handle 1: htb default 1", 
             f"tc class replace dev {interface} parent 1: classid {queue} htb rate {bitrate} ceil 640kbps",
-            f"tc qdisc replace dev {interface} parent {queue} handle 4{queue[2]}: netem delay {delay}ms",
+            f"tc qdisc replace dev {interface} parent {queue} handle 4{queue.split(':')[1]}: netem delay {delay}ms",
             f"tc filter replace dev {interface} parent 1:0 prio 0 u32 match ip dst {app.ip} flowid {queue}"]
       for cmd in cmds:
         logging.info(cmd)
@@ -185,7 +185,7 @@ def change_link_on_host(host, dst, interface,
     for app in dst.apps:
       cmds = [f"tc qdisc replace dev {interface} root handle 1: htb default 1", 
             f"tc class replace dev {interface} parent 1: classid {queue} htb rate {bitrate} ceil 640kbps",
-            f"tc qdisc replace dev {interface} parent {queue} handle 4{queue[2]}: netem delay {delay}ms",
+            f"tc qdisc replace dev {interface} parent {queue} handle 4{queue.split(':')[1]}: netem delay {delay}ms",
             f"tc filter replace dev {interface} parent 1:0 prio 0 u32 match ip dst {app.ip} flowid {queue}"]
       for cmd in cmds:
         logging.info(cmd)
