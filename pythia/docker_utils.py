@@ -144,7 +144,40 @@ def execute_cmd(cmd, container_id):
   return container.exec_run(cmd)
 
 
+def start_link(vUE, vmec_host,
+                network, distribution=0):
+  """
+  This function changes the link between two pythia apps.
+  bitrate is on kbits
+  delay and distribution are in ms.
+  """
+  #Execute on host a
+  logging.info(f"Start from {vUE.docker_id} to {vmec_host.docker_id}.")
+  start_link_on_host(vUE, vmec_host, network.interface,'vUE')
 
+  #Execute on host b
+  logging.info(f"Start from {vmec_host.docker_id} to {vUE.docker_id}.")
+  start_link_on_host(vmec_host, vUE, network.interface,'vmec')
+
+def start_link_on_host(host, dst, interface, side):
+  queue = host.queue_name.get(dst.infra_ip)
+  if side == 'vUE':
+    for app in dst.active_apps:
+      cmds = [f"tc qdisc add dev {interface} root handle 1: htb default 1", 
+            f"tc class add dev {interface} parent 1: classid {queue} htb rate 10000 ceil 640kbps",
+            f"tc qdisc add dev {interface} parent {queue} handle 4{queue.split(':')[1]}: netem delay 1ms",
+            f"tc filter add dev {interface} parent 1:0 prio 0 u32 match ip dst {app.ip} flowid {queue}"]
+      for cmd in cmds:
+        execute_cmd(cmd, host.docker_id)
+        
+  else:
+    for app in dst.apps:
+      cmds = [f"tc qdisc add dev {interface} root handle 1: htb default 1", 
+            f"tc class add dev {interface} parent 1: classid {queue} htb rate 10000 ceil 640kbps",
+            f"tc qdisc add dev {interface} parent {queue} handle 4{queue.split(':')[1]}: netem delay 1ms",
+            f"tc filter add dev {interface} parent 1:0 prio 0 u32 match ip dst {app.ip} flowid {queue}"]
+      for cmd in cmds:
+        execute_cmd(cmd, host.docker_id)
 
 
 def change_link(vUE, vmec_host,
@@ -173,23 +206,19 @@ def change_link_on_host(host, dst, interface,
   queue = host.queue_name.get(dst.infra_ip)
   if side == 'vUE':
     for app in dst.active_apps:
-      cmds = [f"tc qdisc replace dev {interface} root handle 1: htb default 1", 
-            f"tc class replace dev {interface} parent 1: classid {queue} htb rate {bitrate} ceil 640kbps",
-            f"tc qdisc replace dev {interface} parent {queue} handle 4{queue.split(':')[1]}: netem delay {delay}ms",
-            f"tc filter replace dev {interface} parent 1:0 prio 0 u32 match ip dst {app.ip} flowid {queue}"]
+      cmds = [f"tc class change dev {interface} parent 1: classid {queue} htb rate {bitrate} ceil 640kbps",
+            f"tc qdisc change dev {interface} parent {queue} handle 4{queue.split(':')[1]}: netem delay {delay}ms"]
+      logging.info(cmds)
       for cmd in cmds:
-        logging.info(cmd)
-        execute_cmd(cmd, host.docker_id)
+        logging.info(execute_cmd(cmd, host.docker_id))
         
   else:
     for app in dst.apps:
-      cmds = [f"tc qdisc replace dev {interface} root handle 1: htb default 1", 
-            f"tc class replace dev {interface} parent 1: classid {queue} htb rate {bitrate} ceil 640kbps",
-            f"tc qdisc replace dev {interface} parent {queue} handle 4{queue.split(':')[1]}: netem delay {delay}ms",
-            f"tc filter replace dev {interface} parent 1:0 prio 0 u32 match ip dst {app.ip} flowid {queue}"]
+      cmds = [f"tc class change dev {interface} parent 1: classid {queue} htb rate {bitrate} ceil 640kbps",
+            f"tc qdisc change dev {interface} parent {queue} handle 4{queue.split(':')[1]}: netem delay {delay}ms"]
+      logging.info(cmds)
       for cmd in cmds:
-        logging.info(cmd)
-        execute_cmd(cmd, host.docker_id)
+        logging.info(execute_cmd(cmd, host.docker_id))
 
 def old_change_link(ue_app, mec_app,
                 ue_network, mec_network,

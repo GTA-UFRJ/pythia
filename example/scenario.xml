@@ -6,53 +6,42 @@
   Triumph's arc to Tour Eiffel in 40 minutes -->
   <ue name="ueA" positions_file="example/ue1_positions.csv">
     <!--ue_app name="ping_sender" image="ping_client" command="172.21.0.3" volume="test_vol"/-->
-    <ue_app name="ping_sender" image="detect_latency" command="172.21.0.3" volume="test_vol"/>
+    <ue_app name="ping_sender" image="detect_latency" command="172.21.0.3" volume="ueA"/>
   </ue>
 
   <ue name="ueB" positions_file="example/ue1_positions.csv">
     <!--ue_app name="ping_sender" image="ping_client" command="172.21.0.3" volume="test_vol"/-->
-    <ue_app name="ping_sender2" image="detect_latency" command="172.21.0.3" volume="test_vol2"/>
+    <ue_app name="ping_sender2" image="detect_latency" command="172.21.0.3" volume="ueB"/>
   </ue>
 
   <!-- MEC Hosts -->
   <mec_host name="mecA" memmory="1" cpu="2"/>
-  <mec_host name="mecB" memmory="1" cpu="2"/>
 
   <!-- MEC Apps -->
  
   <mec_app name="host" image="simple_server" ip="172.21.0.3" command=""/>
 
   <link ue="ueA" mec_host="mecA" latency="500.0" upload="5000" download="100Mbps" time="0"/>
-  <link ue="ueA" mec_host="mecB" latency="500.0" upload="5000" download="100Mbps" time="0"/>
 
   <link ue="ueA" mec_host="mecA" latency="700.0" upload="5000" download="100Mbps" time="10"/>
-  <link ue="ueA" mec_host="mecB" latency="700.0" upload="5000" download="100Mbps" time="10"/>
 
   <link ue="ueA" mec_host="mecA" latency="1200.0" upload="5000" download="100Mbps" time="20"/>
-  <link ue="ueA" mec_host="mecB" latency="1200.0" upload="5000" download="100Mbps" time="20"/>
 
   <link ue="ueA" mec_host="mecA" latency="800.0" upload="5000" download="100Mbps" time="30"/>
-  <link ue="ueA" mec_host="mecB" latency="800.0" upload="5000" download="100Mbps" time="30"/>
 
   <link ue="ueA" mec_host="mecA" latency="200.0" upload="5000" download="100Mbps" time="40"/>
-  <link ue="ueA" mec_host="mecB" latency="200.0" upload="5000" download="100Mbps" time="40"/>
 
   <link ue="ueA" mec_host="mecA" latency="0" upload="5000" download="100Mbps" time="45"/>
 
   <link ue="ueB" mec_host="mecA" latency="200.0" upload="5000" download="100Mbps" time="0"/>
-  <link ue="ueB" mec_host="mecB" latency="200.0" upload="5000" download="100Mbps" time="0"/>
 
   <link ue="ueB" mec_host="mecA" latency="400.0" upload="5000" download="100Mbps" time="10"/>
-  <link ue="ueB" mec_host="mecB" latency="400.0" upload="5000" download="100Mbps" time="10"/>
 
   <link ue="ueB" mec_host="mecA" latency="600.0" upload="5000" download="100Mbps" time="20"/>
-  <link ue="ueB" mec_host="mecB" latency="600.0" upload="5000" download="100Mbps" time="20"/>
 
   <link ue="ueB" mec_host="mecA" latency="500.0" upload="5000" download="100Mbps" time="30"/>
-  <link ue="ueB" mec_host="mecB" latency="500.0" upload="5000" download="100Mbps" time="30"/>
 
   <link ue="ueB" mec_host="mecA" latency="700.0" upload="5000" download="100Mbps" time="40"/>
-  <link ue="ueB" mec_host="mecB" latency="700.0" upload="5000" download="100Mbps" time="40"/>
 
   <!--link ue="ueA" mec_host="mecA" latency="2000.0" upload="5000" download="100Mbps" time="20"/>
   <link ue="ueA" mec_host="mecB" latency="2000.20" upload="5000" download="100Mbps" time="20"/-->

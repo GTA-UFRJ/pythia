@@ -81,7 +81,7 @@ for ue in UEs:
                           default_upload)"""
 
 #Bootstrap emulation
-emulation.bootstrap(networks, mec_hosts, mec_apps,UEs)
+emulation.bootstrap(networks, mec_hosts, mec_apps,UEs, links)
 
 #Invoke emulation
 emulation.emulate(networks, links)

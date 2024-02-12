@@ -52,8 +52,7 @@ class PythiaEmulationHost(DockerContainer):
     self.queue_name = {}
 
   def add_new_peer(self, other_ip):
-    if (other_ip not in self.queue_name):
-      self.queue_name[other_ip] = f"1:{len(self.queue_name)+1}"
+    self.queue_name[other_ip] = f"1:{len(self.queue_name)+1}"
 
 
 

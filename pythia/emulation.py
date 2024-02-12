@@ -20,7 +20,7 @@ def emulate(networks, links):
   events_queue = links
   events_queue.sort(key=lambda x: x.time, reverse=True)
   emulation_zero = time.time()
-  emulation_time_error = 0.3
+  emulation_time_error = 0.1
   event = events_queue.pop()
   #Start main emulation loop
   while(len(events_queue)):
@@ -28,8 +28,6 @@ def emulate(networks, links):
     time_difference = event.time - emulation_time
     if time_difference < emulation_time_error:
       logging.info(f"Event time = {event.time}, emu time = {emulation_time}, Time diff = {time_difference}")
-      event.mec_host.add_new_peer(event.ue.infra_ip)
-      event.ue.add_new_peer(event.mec_host.infra_ip)
       docker_utils.change_link(event.ue, event.mec_host,
                                networks['infra'],
                                event.upload, event.latency)
@@ -40,7 +38,7 @@ def emulate(networks, links):
     time.sleep(time_difference - emulation_time_error/2)
     print(f"Event = {event}")
 
-def bootstrap(networks, mec_hosts, mec_apps, UEs):
+def bootstrap(networks, mec_hosts, mec_apps, UEs, links):
   # Need to create the ping_sender and ping_receiver containers.
   """This function bootstraps the emulation.
   It creates the emulation scenario inside docker, 
@@ -101,7 +99,17 @@ def bootstrap(networks, mec_hosts, mec_apps, UEs):
     docker_utils.start_container(mec_apps[mec_app])
     docker_utils.connect_app_to_host(mec_apps[mec_app])
 
-"""
+  events_init = links
+  connections = set()
+  for event in events_init:
+    connections.add((event.ue, event.mec_host))
+
+  for element in connections:
+    element[0].add_new_peer(element[1].infra_ip)
+    element[1].add_new_peer(element[0].infra_ip)
+    docker_utils.start_link(element[0], element[1], networks['infra'])
+
+    """
 def start(mec_hosts, UEs, mec_apps):
   for vmh in mec_hosts:
     docker_utils.start_container(mec_hosts[vmh])
