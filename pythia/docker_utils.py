@@ -207,7 +207,7 @@ def change_link_on_host(host, dst, interface,
   if side == 'vUE':
     for app in dst.active_apps:
       cmds = [f"tc class change dev {interface} parent 1: classid {queue} htb rate {bitrate} ceil 640kbps",
-            f"tc qdisc change dev {interface} parent {queue} handle 4{queue.split(':')[1]}: netem delay {delay}ms"]
+            f"tc qdisc change dev {interface} parent {queue} handle 4{queue.split(':')[1]}: netem delay {delay}ms loss 2%"]
       logging.info(cmds)
       for cmd in cmds:
         logging.info(execute_cmd(cmd, host.docker_id))
@@ -215,7 +215,7 @@ def change_link_on_host(host, dst, interface,
   else:
     for app in dst.apps:
       cmds = [f"tc class change dev {interface} parent 1: classid {queue} htb rate {bitrate} ceil 640kbps",
-            f"tc qdisc change dev {interface} parent {queue} handle 4{queue.split(':')[1]}: netem delay {delay}ms"]
+            f"tc qdisc change dev {interface} parent {queue} handle 4{queue.split(':')[1]}: netem delay {delay}ms loss 2%"]
       logging.info(cmds)
       for cmd in cmds:
         logging.info(execute_cmd(cmd, host.docker_id))
