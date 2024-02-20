@@ -14,6 +14,10 @@
     <ue_app name="ping_sender2" image="detect_latency" command="172.21.0.3" volume="ueB"/>
   </ue>
 
+  <ue name="ueC" positions_file="example/ue1_positions.csv">
+    <!--ue_app name="ping_sender" image="ping_client" command="172.21.0.3" volume="test_vol"/-->
+    <ue_app name="ping_sender3" image="detect_latency" command="172.21.0.3" volume="ueC"/>
+  </ue>
   <!-- MEC Hosts -->
   <mec_host name="mecA" memmory="1" cpu="2"/>
 
@@ -33,6 +37,7 @@
 
   <link ue="ueA" mec_host="mecA" latency="0" upload="5000" download="100Mbps" time="45"/>
 
+
   <link ue="ueB" mec_host="mecA" latency="200.0" upload="5000" download="100Mbps" time="0"/>
 
   <link ue="ueB" mec_host="mecA" latency="400.0" upload="5000" download="100Mbps" time="10"/>
@@ -43,6 +48,16 @@
 
   <link ue="ueB" mec_host="mecA" latency="700.0" upload="5000" download="100Mbps" time="40"/>
 
+
+  <link ue="ueC" mec_host="mecA" latency="600.0" upload="5000" download="100Mbps" time="0"/>
+
+  <link ue="ueC" mec_host="mecA" latency="200.0" upload="5000" download="100Mbps" time="10"/>
+
+  <link ue="ueC" mec_host="mecA" latency="900.0" upload="5000" download="100Mbps" time="20"/>
+
+  <link ue="ueC" mec_host="mecA" latency="350.0" upload="5000" download="100Mbps" time="30"/>
+
+  <link ue="ueC" mec_host="mecA" latency="100.0" upload="5000" download="100Mbps" time="40"/>
   <!--link ue="ueA" mec_host="mecA" latency="2000.0" upload="5000" download="100Mbps" time="20"/>
   <link ue="ueA" mec_host="mecB" latency="2000.20" upload="5000" download="100Mbps" time="20"/-->
 

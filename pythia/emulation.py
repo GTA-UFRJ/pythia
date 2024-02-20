@@ -109,7 +109,7 @@ def bootstrap(networks, mec_hosts, mec_apps, UEs, links):
     element[1].add_new_peer(element[0].infra_ip)
     docker_utils.start_link(element[0], element[1], networks['infra'])
 
-    """
+"""
 def start(mec_hosts, UEs, mec_apps):
   for vmh in mec_hosts:
     docker_utils.start_container(mec_hosts[vmh])
