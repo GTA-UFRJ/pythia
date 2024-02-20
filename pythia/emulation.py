@@ -17,6 +17,7 @@ def emulate(networks, links):
   """This function runs the emulation phase of Pythia"""
 
   #Create emulation events queue
+  emu_times = []
   events_queue = links
   events_queue.sort(key=lambda x: x.time, reverse=True)
   emulation_zero = time.time()
@@ -31,6 +32,7 @@ def emulate(networks, links):
       docker_utils.change_link(event.ue, event.mec_host,
                                networks['infra'],
                                event.upload, event.latency)
+      emu_times.append([emulation_time, time.time() - emulation_time ])
       event = events_queue.pop()
       time_difference = event.time - emulation_time
     if time_difference < 0:
