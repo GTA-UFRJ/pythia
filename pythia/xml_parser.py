@@ -40,6 +40,7 @@ def parse_scenario(filename):
     mec_apps[ma_xml.attrib['name']] = PythiaMECApp(ma_xml.attrib['name'],
                                  ma_xml.attrib['image'],
                                  ma_xml.attrib['ip'],
+                                 ma_xml.attrib['host'],                  
                                  ma_xml.attrib['command'])
 
   # Creating base stations
