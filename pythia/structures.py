@@ -24,10 +24,11 @@ class PythiaApp(DockerContainer):
     self.volume = volume
 
 class PythiaMECApp(PythiaApp):
-  def __init__(self, name, image, ip, command="", volume = False):
-    super().__init__(name, image,command, volume)
+  def __init__(self, name, image, ip, host, command="", volume = False):
+    super().__init__(name, image, command, volume)
     self.docker_id = "MECApp-" + self.id_str
     self.ip = ip
+    self.host = host
 
 class PythiaUEApp(PythiaApp):
   def __init__(self, name, image, command="", volume = False):
