@@ -47,6 +47,7 @@ ue_network_interface = config['DEFAULT']['ue_network_interface']
 infra_network_name = config['DEFAULT']['infra_network_name']
 infra_network_range = config['DEFAULT']['infra_network_range']
 infra_network_interface = config['DEFAULT']['infra_network_interface']
+server_ip = config['DEFAULT']['server_ip']
 
 networks = {}
 networks['mec'] = structures.PythiaNetwork(mec_network_name,
