@@ -2,9 +2,9 @@ FROM python:3.9.2
 
 WORKDIR /app
 
-COPY requirements.txt .
+RUN pip install requests
 
-RUN pip install -r requirements.txt
+RUN pip install Flask
 
 EXPOSE 5000
 
