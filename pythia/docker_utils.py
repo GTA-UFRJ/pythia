@@ -255,3 +255,12 @@ def old_change_link_on_host(host, ip_dst, interface,
   for cmd in cmds:
     result = str(execute_cmd(cmd, host.docker_id).output)
     #logging.info(result)
+
+def create_api_container(app, network):
+  client.containers.create(app.image,
+                             name=app.docker_id,
+                             command=app.command,
+                             cap_add=["NET_ADMIN"])
+  logging.info(f'IP is {app.ip}')
+  connect(app, network, app.ip)
+  return 0
