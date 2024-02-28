@@ -6,6 +6,7 @@ Emulation must create UEApp, vUE, and vMEC containers.
 The MEC Platform should be responsible for MECApp creation"""
 
 import pythia.docker_utils as docker_utils
+import pythia.structures as structures
 import logging
 import sys
 import time
@@ -40,7 +41,7 @@ def emulate(networks, links):
     time.sleep(time_difference - emulation_time_error/2)
     print(f"Event = {event}")
 
-def bootstrap(networks, mec_hosts, mec_apps, UEs, links):
+def bootstrap(networks, mec_hosts, mec_apps, UEs, links, server_ip):
   # Need to create the ping_sender and ping_receiver containers.
   """This function bootstraps the emulation.
   It creates the emulation scenario inside docker, 
@@ -111,6 +112,12 @@ def bootstrap(networks, mec_hosts, mec_apps, UEs, links):
     element[1].add_new_peer(element[0].infra_ip)
     docker_utils.start_link(element[0], element[1], networks['infra'])
 
+  
+  # Teste de API
+    
+  server_app = structures.PythiaServerApp(name='server', image='apps_list:latest', ip=server_ip)
+  docker_utils.create_api_container(server_app, networks['ue'])
+  docker_utils.start_container(server_app)
 """
 def start(mec_hosts, UEs, mec_apps):
   for vmh in mec_hosts:
