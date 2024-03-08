@@ -169,10 +169,32 @@ In [this paper](https://gitlab.inria.fr/pcruzcam/pythia/-/blob/master/doc/mobili
 
 
 # Usage instructions
-- Install venv
-- source env/bin/activate
-- Build images (example/simple_server, example/simple_client, pythia/images/vmec_host, pythia/images/vUE)
-- python3 pythia.py
+
+## Linux
+
+- Activate the virtual environment:
+
+```shell
+source env/bin/activate
+```
+
+- To execute the examples, the user must also build the UEApp and MECApp images they intend to run as applications. For using vmec_host, for example, the Docker image can be built as follows:
+
+```shell
+docker build -f pythia/images/vmec_host/Dockerfile -t pythia:vmec_host pythia/images/vmec_host
+```
+
+- To avoid initialization errors, the `terminate.sh` script must always be run before restarting Pythia. The script terminates all Docker networks and containers running in the background, so be aware that you may encounter problems if you are using Docker for something else. To execute the `terminate.sh` script, run:
+
+```shell
+./terminate.sh
+```
+
+- Run `pythia.py`
+
+```shell
+python3 pythia.py
+```
 
 # Minutes of Meetings
 13th Dec. 2022
