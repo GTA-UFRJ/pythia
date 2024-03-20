@@ -1,0 +1,30 @@
+import psutil
+import time
+
+def track_resource_usage(interval_sec, duration_sec):
+    cpu_data = []
+    memory_data = []
+    disk_data = []
+    start_time = time.time()
+    while (time.time() - start_time) < duration_sec:
+        cpu_usage = psutil.cpu_percent(interval=interval_sec)
+        memory_usage = psutil.virtual_memory().percent
+        disk_usage = psutil.disk_usage('/').percent
+
+        cpu_data.append(cpu_usage)
+        memory_data.append(memory_usage)
+        disk_data.append(disk_usage)
+
+        time.sleep(interval_sec)
+
+    return cpu_data, memory_data, disk_data
+
+if __name__ == "__main__":
+    interval_sec = 1
+    duration_sec = 70
+
+    cpu_data, memory_data, disk_data = track_resource_usage(interval_sec, duration_sec)
+
+    print(f"{cpu_data} \n")
+    print(f"{memory_data} \n")
+    print(f"{disk_data} \n" )
