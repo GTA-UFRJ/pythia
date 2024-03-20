@@ -1,66 +1,44 @@
 <?xml version="1.0"?>
 <experiment>
+  <ue name="ue0" positions_file="example/ue1_positions.csv">
+    <ue_app name="ping_sender0" image="detect_latency" command="172.21.0.2" volume="ue0"/>
+ </ue>
+  <ue name="ue1" positions_file="example/ue1_positions.csv">
+    <ue_app name="ping_sender1" image="detect_latency" command="172.21.0.3" volume="ue1"/>
+ </ue>
+  <mec_host name="mec0" memmory="1" cpu="2"/>
+  <mec_host name="mec1" memmory="1" cpu="2"/>
 
-  <!-- UEs -->
-  <!-- The file ueA_positions.csv represents a walk from 
-  Triumph's arc to Tour Eiffel in 40 minutes -->
-  <ue name="ueA" positions_file="example/ue1_positions.csv">
-    <!--ue_app name="ping_sender" image="ping_client" command="172.21.0.3" volume="test_vol"/-->
-    <ue_app name="ping_sender" image="detect_latency" command="172.21.0.3" volume="ueA"/>
-  </ue>
+  <mec_app name="mecApp0" image="simple_server" ip="172.21.0.2" host="mec0" command=""/>
+  <mec_app name="mecApp1" image="simple_server" ip="172.21.0.3" host="mec1" command=""/>
 
-  <ue name="ueB" positions_file="example/ue1_positions.csv">
-    <!--ue_app name="ping_sender" image="ping_client" command="172.21.0.3" volume="test_vol"/-->
-    <ue_app name="ping_sender2" image="detect_latency" command="172.21.0.3" volume="ueB"/>
-  </ue>
-
-  <ue name="ueC" positions_file="example/ue1_positions.csv">
-    <!--ue_app name="ping_sender" image="ping_client" command="172.21.0.3" volume="test_vol"/-->
-    <ue_app name="ping_sender3" image="detect_latency" command="172.21.0.3" volume="ueC"/>
-  </ue>
-  <!-- MEC Hosts -->
-  <mec_host name="mecA" memmory="1" cpu="2"/>
-
-  <!-- MEC Apps -->
- 
-  <mec_app name="host" image="simple_server" ip="172.21.0.3" command=""/>
-
-  <link ue="ueA" mec_host="mecA" latency="500.0" upload="5000" download="100Mbps" time="0"/>
-
-  <link ue="ueA" mec_host="mecA" latency="700.0" upload="5000" download="100Mbps" time="10"/>
-
-  <link ue="ueA" mec_host="mecA" latency="1200.0" upload="5000" download="100Mbps" time="20"/>
-
-  <link ue="ueA" mec_host="mecA" latency="800.0" upload="5000" download="100Mbps" time="30"/>
-
-  <link ue="ueA" mec_host="mecA" latency="200.0" upload="5000" download="100Mbps" time="40"/>
-
-  <link ue="ueA" mec_host="mecA" latency="0" upload="5000" download="100Mbps" time="45"/>
-
-
-  <link ue="ueB" mec_host="mecA" latency="200.0" upload="5000" download="100Mbps" time="0"/>
-
-  <link ue="ueB" mec_host="mecA" latency="400.0" upload="5000" download="100Mbps" time="10"/>
-
-  <link ue="ueB" mec_host="mecA" latency="600.0" upload="5000" download="100Mbps" time="20"/>
-
-  <link ue="ueB" mec_host="mecA" latency="500.0" upload="5000" download="100Mbps" time="30"/>
-
-  <link ue="ueB" mec_host="mecA" latency="700.0" upload="5000" download="100Mbps" time="40"/>
-
-
-  <link ue="ueC" mec_host="mecA" latency="600.0" upload="5000" download="100Mbps" time="0"/>
-
-  <link ue="ueC" mec_host="mecA" latency="200.0" upload="5000" download="100Mbps" time="10"/>
-
-  <link ue="ueC" mec_host="mecA" latency="900.0" upload="5000" download="100Mbps" time="20"/>
-
-  <link ue="ueC" mec_host="mecA" latency="350.0" upload="5000" download="100Mbps" time="30"/>
-
-  <link ue="ueC" mec_host="mecA" latency="100.0" upload="5000" download="100Mbps" time="40"/>
-  <!--link ue="ueA" mec_host="mecA" latency="2000.0" upload="5000" download="100Mbps" time="20"/>
-  <link ue="ueA" mec_host="mecB" latency="2000.20" upload="5000" download="100Mbps" time="20"/-->
-
+  <link ue="ue0" mec_host="mec0" latency="629" upload="5000" download="100Mbps" time="00"/>
+  <link ue="ue0" mec_host="mec1" latency="187" upload="5000" download="100Mbps" time="00"/>
+  <link ue="ue0" mec_host="mec0" latency="898" upload="5000" download="100Mbps" time="10"/>
+  <link ue="ue0" mec_host="mec1" latency="749" upload="5000" download="100Mbps" time="10"/>
+  <link ue="ue0" mec_host="mec0" latency="809" upload="5000" download="100Mbps" time="20"/>
+  <link ue="ue0" mec_host="mec1" latency="437" upload="5000" download="100Mbps" time="20"/>
+  <link ue="ue0" mec_host="mec0" latency="835" upload="5000" download="100Mbps" time="30"/>
+  <link ue="ue0" mec_host="mec1" latency="558" upload="5000" download="100Mbps" time="30"/>
+  <link ue="ue0" mec_host="mec0" latency="742" upload="5000" download="100Mbps" time="40"/>
+  <link ue="ue0" mec_host="mec1" latency="96" upload="5000" download="100Mbps" time="40"/>
+  <link ue="ue0" mec_host="mec0" latency="574" upload="5000" download="100Mbps" time="50"/>
+  <link ue="ue0" mec_host="mec1" latency="214" upload="5000" download="100Mbps" time="50"/>
+  <link ue="ue0" mec_host="mec0" latency="998" upload="5000" download="100Mbps" time="60"/>
+  <link ue="ue0" mec_host="mec1" latency="1082" upload="5000" download="100Mbps" time="60"/>
+  <link ue="ue1" mec_host="mec0" latency="629" upload="5000" download="100Mbps" time="00"/>
+  <link ue="ue1" mec_host="mec1" latency="734" upload="5000" download="100Mbps" time="00"/>
+  <link ue="ue1" mec_host="mec0" latency="901" upload="5000" download="100Mbps" time="10"/>
+  <link ue="ue1" mec_host="mec1" latency="202" upload="5000" download="100Mbps" time="10"/>
+  <link ue="ue1" mec_host="mec0" latency="573" upload="5000" download="100Mbps" time="20"/>
+  <link ue="ue1" mec_host="mec1" latency="566" upload="5000" download="100Mbps" time="20"/>
+  <link ue="ue1" mec_host="mec0" latency="166" upload="5000" download="100Mbps" time="30"/>
+  <link ue="ue1" mec_host="mec1" latency="57" upload="5000" download="100Mbps" time="30"/>
+  <link ue="ue1" mec_host="mec0" latency="177" upload="5000" download="100Mbps" time="40"/>
+  <link ue="ue1" mec_host="mec1" latency="560" upload="5000" download="100Mbps" time="40"/>
+  <link ue="ue1" mec_host="mec0" latency="117" upload="5000" download="100Mbps" time="50"/>
+  <link ue="ue1" mec_host="mec1" latency="1134" upload="5000" download="100Mbps" time="50"/>
+  <link ue="ue1" mec_host="mec0" latency="391" upload="5000" download="100Mbps" time="60"/>
+  <link ue="ue1" mec_host="mec1" latency="810" upload="5000" download="100Mbps" time="60"/>
+  <link ue="ue0" mec_host="mec0" latency="0" upload="5000" download="100Mbps" time="65"/>
 </experiment>
-
-
