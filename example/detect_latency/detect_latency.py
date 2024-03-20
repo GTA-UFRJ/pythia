@@ -4,7 +4,7 @@ import sys
 from datetime import datetime
 
 
-time.sleep(1)
+time.sleep(5)
 # Definiton of our host IP
 host = sys.argv[1]
 # Set the amount of time the program will run for

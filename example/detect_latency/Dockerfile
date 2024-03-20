@@ -6,5 +6,5 @@ RUN apt update
 RUN apt install iproute2 -y; apt install iputils-ping -y
 RUN pip3 install requests
 
-CMD ["./detect_latency.py", "172.21.0.3"]
-ENTRYPOINT ["python3"]
+ENTRYPOINT ["python3", "/detect_latency.py"]
+CMD ["172.21.0.3"]

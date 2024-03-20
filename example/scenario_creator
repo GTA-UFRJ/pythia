@@ -1,0 +1,22 @@
+import math
+import random
+scen_numbers = [1, 4, 16, 64, 256]
+for value in scen_numbers:
+    with open(f"example/scenario{int(math.log(value, 4))}.xml", 'a') as output_file:
+        output_file.write('<?xml version="1.0"?>\n' + '<experiment>\n')
+        for i in range(value):
+            output_file.write(f'  <ue name="ue{i}" positions_file="example/ue1_positions.csv">\n' +
+                               f'    <ue_app name="ping_sender{i}" image="detect_latency" command="172.21.0.{i+2}" volume="ue{i}"/>\n' +  ' </ue>\n')
+        for j in range(value):
+            output_file.write(f'  <mec_host name="mec{j}" memmory="1" cpu="2"/>\n')
+        output_file.write('\n')
+        for a in range(value):
+            output_file.write(f'  <mec_app name="mecApp{a}" image="simple_server" ip="172.21.0.{a+2}" host="mec{a}" command=""/>\n')
+        output_file.write('\n')
+        for k in range(value):
+            for l in range(7):
+                for m in range(value):
+                    output_file.write(f'  <link ue="ue{k}" mec_host="mec{m}" latency="{random.randint(50, 1200)}" upload="5000" download="100Mbps" time="{l}0"/>\n')
+        output_file.write(f'  <link ue="ue0" mec_host="mec0" latency="0" upload="5000" download="100Mbps" time="65"/>\n')
+        
+        output_file.write('</experiment>')

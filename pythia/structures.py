@@ -22,12 +22,19 @@ class PythiaApp(DockerContainer):
     self.docker_id = ""
     self.ip = ""
     self.volume = volume
-
-class PythiaMECApp(PythiaApp):
+    
+class PythiaServerApp(PythiaApp):
   def __init__(self, name, image, ip, command="", volume = False):
-    super().__init__(name, image,command, volume)
+    super().__init__(name, image, command, volume)
+    self.docker_id = "Server-" + self.id_str
+    self.ip = ip
+    
+class PythiaMECApp(PythiaApp):
+  def __init__(self, name, image, ip, host, command="", volume = False):
+    super().__init__(name, image, command, volume)
     self.docker_id = "MECApp-" + self.id_str
     self.ip = ip
+    self.host = host
 
 class PythiaUEApp(PythiaApp):
   def __init__(self, name, image, command="", volume = False):
@@ -49,6 +56,10 @@ class PythiaEmulationHost(DockerContainer):
     #The ip to connect to MEC/UE apps
     self.external_ip = ""
     self.docker_id = "" # id or name in docker
+    self.queue_name = {}
+
+  def add_new_peer(self, other_ip):
+    self.queue_name[other_ip] = f"1:{len(self.queue_name)+1}"
 
 
 
