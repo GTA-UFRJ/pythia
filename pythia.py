@@ -4,7 +4,7 @@ import configparser
 import sys
 import os
 import argparse
-from pythia import *
+from pythia import emulation, structures, xml_parser
 import docker
 
 configuration_file = 'pythia.ini'
@@ -86,3 +86,6 @@ emulation.bootstrap(networks, mec_hosts, mec_apps,UEs, links, server_ip)
 
 #Invoke emulation
 emulation.emulate(networks, links)
+
+#Terminate all running containers
+os.system("./terminate.sh")
