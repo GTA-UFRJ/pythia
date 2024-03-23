@@ -81,8 +81,18 @@ for ue in UEs:
                           default_download,
                           default_upload)"""
 
-#Bootstrap emulation
-emulation.bootstrap(networks, mec_hosts, mec_apps,UEs, links, server_ip)
+try:
+  #Bootstrap emulation
+  emulation.bootstrap(networks, mec_hosts, mec_apps,UEs, links, server_ip)
+
+except docker.errors.ImageNotFound as e:
+  print(e)
+
+  #Terminate all running containers
+  os.system("./terminate.sh")
+
+  #Exit program as an error
+  sys.exit(1)
 
 #Invoke emulation
 emulation.emulate(networks, links)
