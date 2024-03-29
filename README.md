@@ -168,7 +168,7 @@ MEC can be regarded as a Virtual Network Function (VNF). Nevertheless, the coupl
 In [this paper](https://gitlab.inria.fr/pcruzcam/pythia/-/blob/master/doc/mobility/08486021.pdf), authors discuss the mobility of VNFs. They have an almost artistic sentence that states: "while placing vNFs near end-users radically reduces vNF-to-user end-to-end (E2E) latency (the latency experienced between an end-user and the associated vNF), time-to-response, and unnecessary utilisation of the core network, the location of edge vNFs has to be carefully managed to accommodate movements of end-users (that are expected to happen constantly due to the small cell sizes of next generation mobile architecture (5G)) and also to keep up with varying traffic dynamics that cause highly variable latency across network links.". A very condensed explanation.
 
 
-# Usage instructions
+# Usage Instructions
 
 ## Linux
 
@@ -178,22 +178,49 @@ In [this paper](https://gitlab.inria.fr/pcruzcam/pythia/-/blob/master/doc/mobili
 source env/bin/activate
 ```
 
-- To execute the examples, the user must also build the UEApp and MECApp images they intend to run as applications. For using vmec_host, for example, the Docker image can be built as follows:
+- Install requirements from requirements.txt:
 
 ```shell
-docker build -f pythia/images/vmec_host/Dockerfile -t pythia:vmec_host pythia/images/vmec_host
+pip install -r requirements.txt
 ```
 
-- To avoid initialization errors, the `terminate.sh` script must always be run before restarting Pythia. The script terminates all Docker networks and containers running in the background, so be aware that you may encounter problems if you are using Docker for something else. To execute the `terminate.sh` script, run:
+- To execute the examples, the user must also build the UEApp and MECApp images they intend to run as applications. The Docker images can be built as follows:
 
-```shell
-./terminate.sh
-```
+    - For using `vmec_host`:
+    ```shell
+    docker build -f pythia/images/vmec_host/Dockerfile -t pythia:vmec_host pythia/images/vmec_host
+    ```
+    
+    - For using `vUE`:
+    ```shell
+    docker build -f pythia/images/vUE/Dockerfile -t pythia:vUE pythia/images/vUE
+    ```
+    
+    - For using `simple_server`:
+    ```shell
+    docker build -f example/simple_server/Dockerfile -t pythia:simple_server example/simple_server
+    ```
+    
+    - For using `apps_list`:
+    ```shell
+    docker build -f pythia/API/apps_list/Dockerfile -t apps_list:latest pythia/API/apps_list
+    ```
+    
+    - For using `detect_latency`:
+    ```shell
+    docker build -f example/detect_latency/Dockerfile -t detect_latency:latest example/detect_latency
+    ```
 
-- Run `pythia.py`
+- Run `pythia.py`:
 
 ```shell
 python3 pythia.py
+```
+
+- The script `terminate.sh` is automatically run after every Pythia execution, and it's responsible for terminating all Docker networks and containers running in the background. So, be aware that you may encounter problems if you are using Docker for something else. If you run into any errors during Pythia execution, you may need to run the script manually using the command:
+
+```shell
+./terminate.sh
 ```
 
 # Minutes of Meetings
