@@ -37,9 +37,11 @@ class PythiaMECApp(PythiaApp):
     self.host = host
 
 class PythiaUEApp(PythiaApp):
-  def __init__(self, name, image, command="", volume = False):
+  def __init__(self, name, image, command="", volume=False, devices=False, environment=False):
     super().__init__(name, image, command, volume)
     self.docker_id = "UEApp-" + self.id_str
+    self.devices = devices
+    self.environment = environment
 
 class PythiaEmulationHost(DockerContainer):
   """A host represents either an UE or a MEC Host.

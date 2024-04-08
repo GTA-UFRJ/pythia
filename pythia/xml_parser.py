@@ -22,10 +22,24 @@ def parse_scenario(filename):
     ue = PythiaUEHost(ue_xml.attrib['name'],
                       ue_xml.attrib['positions_file'])
     for ue_app_tag in ue_xml.iter('ue_app'):
+      volumes = []
+      devices = []
+      environments = []
+      for volume_tag in ue_app_tag.iter('volume'):
+        volumes.append(volume_tag.text)
+      for device_tag in ue_app_tag.iter('device'):
+        devices.append(device_tag.text)
+      for environment_tag in ue_app_tag.iter('environment'):
+        environments.append(environment_tag.text)
       ue.apps.append(PythiaUEApp(ue_app_tag.attrib['name'],
-                                 ue_app_tag.attrib['image'],
-                                 ue_app_tag.attrib['command'],
-                                ue_app_tag.get('volume')))
+                                ue_app_tag.attrib['image'],
+                                ue_app_tag.attrib['command'],
+                                volumes,
+                                devices,
+                                environments))
+      print(volumes)
+      print(devices)
+      print(environments)
     UEs[ue.name] = ue
 
   #Creating MEC hosts

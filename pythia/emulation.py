@@ -80,7 +80,7 @@ def bootstrap(networks, mec_hosts, mec_apps, UEs, links, server_ip):
     for ue_app in UEs[vUE].apps:
       ue_app.ip = networks['ue'].allocate_ip()
       ue_app.host = UEs[vUE]
-      docker_utils.create_volume(ue_app)
+      docker_utils.create_ue_volume(ue_app)
       docker_utils.create_ue_app(ue_app, networks['ue'])
       docker_utils.start_container(ue_app)
       docker_utils.connect_app_to_host(ue_app)

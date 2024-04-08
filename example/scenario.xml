@@ -1,11 +1,23 @@
 <?xml version="1.0"?>
 <experiment>
   <ue name="ue0" positions_file="example/ue1_positions.csv">
-    <ue_app name="ping_sender0" image="detect_latency" command="172.21.0.2" volume="ue0"/>
- </ue>
+    <ue_app name="ping_sender0" image="firefox" command="172.21.0.2">
+      <volume>ue0:/output</volume>
+      <volume>/tmp/.X11-unix:/tmp/.X11-unix</volume>
+      <volume>/dev/shm:/dev/shm</volume>
+      <volume>/run/user/1000/pulse:/run/user/1000/pulse</volume>
+      <device>/dev/dri</device>
+      <environment>DISPLAY=:0</environment>
+      <environment>DISPLAY=:0</environment>
+    </ue_app>
+  </ue>
+
   <ue name="ue1" positions_file="example/ue1_positions.csv">
-    <ue_app name="ping_sender1" image="detect_latency" command="172.21.0.3" volume="ue1"/>
- </ue>
+    <ue_app name="ping_sender1" image="detect_latency" command="172.21.0.3">
+      <volume>ue1:/output</volume>
+    </ue_app>
+  </ue>
+
   <mec_host name="mec0" memmory="1" cpu="2"/>
   <mec_host name="mec1" memmory="1" cpu="2"/>
 

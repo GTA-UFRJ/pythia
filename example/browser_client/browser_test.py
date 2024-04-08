@@ -3,18 +3,18 @@ import docker
 def run_firefox():
     client = docker.from_env()
     
-    volumes = {
-        '/tmp/.X11-unix': {'bind': '/tmp/.X11-unix', 'mode': 'rw'},
-        '/dev/shm': {'bind': '/dev/shm', 'mode': 'rw'},
-        '/run/user/1000/pulse': {'bind': '/run/user/1000/pulse', 'mode': 'rw'}
-    }
+    volumes = [
+        '/tmp/.X11-unix:/tmp/.X11-unix',
+        '/dev/shm:/dev/shm',
+        '/run/user/1000/pulse:/run/user/1000/pulse'
+    ]
+
+    environment = [
+        'DISPLAY=:0',
+        'PULSE_SERVER=unix:/run/user/1000/pulse/native'
+    ]
     
-    environment = {
-        'DISPLAY': ':0',
-        'PULSE_SERVER': 'unix:/run/user/1000/pulse/native'
-    }
-    
-    device = '/dev/dri'
+    device = ['/dev/dri']
     network_mode = 'host'
     command = '--class=firefox-docker http://localhost:8080'
 
@@ -23,7 +23,7 @@ def run_firefox():
         command=command,
         volumes=volumes,
         environment=environment,
-        devices=[device],
+        devices=device,
         network_mode=network_mode
     )
 

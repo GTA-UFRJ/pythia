@@ -35,27 +35,49 @@ def start_container(container):
 def create_volume(app):
   """This function creates a volume without attaching it to a
   container"""
+  print(app.volume)
   client.volumes.create(name = app.volume)
 
-def create_external_app(app,network):
+def create_ue_volume(app):
+  """This function creates a ue volume without attaching it to a
+  container"""
+
+  for volume in app.volume:
+    if ":/output" in volume:
+      parts = volume.split(":")
+      ue_name = parts[0]
+
+  client.volumes.create(name = ue_name)
+
+def create_external_app(app, network):
   """This function creates an app container without running it.
   Parameters:
     app: the app to run
-    host: the PythiaApp object 
+    network: the network to connect the app container to
   """
-  logging.info(f"Creating container {app.docker_id} from {app.image}, "+
-      f"with ip={app.ip}.")
-  if(app.volume):
-    client.containers.create(app.image,
-                             name=app.docker_id,
-                             volumes=[app.volume+":/output"],
-                             command=app.command,
-                             cap_add=["NET_ADMIN"])
-  else:
-    client.containers.create(app.image,
-                             name=app.docker_id,
-                             command=app.command,
-                             cap_add=["NET_ADMIN"])
+  logging.info(f"Creating container {app.docker_id} from {app.image}, " +
+                f"with ip={app.ip}.")
+  
+  # Initialize the base parameters for the container creation
+  params = {
+      "image": app.image,
+      "name": app.docker_id,
+      "command": app.command,
+      "cap_add": ["NET_ADMIN"]
+  }
+  
+  # Add volume if it exists
+  if app.volume:
+    params["volumes"] = app.volume
+  if app.devices:
+    params["devices"] = app.devices
+  if app.environment:
+    params["environment"] = app.environment
+
+  # Call the create function with the dynamically built parameters
+  client.containers.create(**params)
+
+  # Connect the created container to the specified network with the given IP
   connect(app, network, app.ip)
 
 
