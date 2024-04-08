@@ -90,10 +90,22 @@ def create_mec_app(app, network):
 
   logging.info(f"Creating container {app.docker_id} from {app.image}, "+
       f"with ip={app.ip}.")
-  client.containers.create(app.image,
-                           name=app.docker_id,
-                           hostname=app.name,
-                           cap_add=["NET_ADMIN"])
+  
+  params = {
+      "image": app.image,
+      "name": app.docker_id,
+      "hostname" : app.name,
+      "cap_add": ["NET_ADMIN"]
+  }
+  
+  # Add volume if it exists
+  if app.environment:
+    params["environment"] = app.environment
+
+  # Call the create function with the dynamically built parameters
+  client.containers.create(**params)
+
+  # Connect the created container to the specified network with the given IP
   connect(app, network, app.ip)
 
 def create_ue_app(app, network):

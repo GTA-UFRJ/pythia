@@ -34,12 +34,9 @@ def parse_scenario(filename):
       ue.apps.append(PythiaUEApp(ue_app_tag.attrib['name'],
                                 ue_app_tag.attrib['image'],
                                 ue_app_tag.attrib['command'],
-                                volumes,
-                                devices,
-                                environments))
-      print(volumes)
-      print(devices)
-      print(environments)
+                                volume=volumes,
+                                devices=devices,
+                                environment=environments))
     UEs[ue.name] = ue
 
   #Creating MEC hosts
@@ -50,12 +47,16 @@ def parse_scenario(filename):
                                         mh_xml.attrib['memmory'])
 
   # Creating MEC apps
+  environments = []
+  for environment_tag in ue_app_tag.iter('environment'):
+    environments.append(environment_tag.text)
   for ma_xml in root.iter('mec_app'):
     mec_apps[ma_xml.attrib['name']] = PythiaMECApp(ma_xml.attrib['name'],
                                  ma_xml.attrib['image'],
                                  ma_xml.attrib['ip'],
                                  ma_xml.attrib['host'],                  
-                                 ma_xml.attrib['command'])
+                                 ma_xml.attrib['command'],
+                                 environment=environments)
 
   # Creating base stations
   """for bs_xml in root.iter('base_station'):
