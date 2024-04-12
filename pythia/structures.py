@@ -4,6 +4,7 @@ import docker
 from operator import itemgetter
 import ipaddress
 import pythia.id_converter as id_converter
+import logging
 
 class DockerContainer:
   """Represents everything that should be a docker container"""
@@ -14,7 +15,9 @@ class DockerContainer:
 
 
 class PythiaApp(DockerContainer):
-  def __init__(self, name, image, command="", volume = False):
+  def __init__(self, name, image,
+               command="", volume = False,
+               environment = False, params = {}):
     super().__init__(image)
     self.host = None
     self.name = name
@@ -22,7 +25,50 @@ class PythiaApp(DockerContainer):
     self.docker_id = ""
     self.ip = ""
     self.volume = volume
-    
+    self.environment = environment
+    self.params=params #Additional parameters to container creation
+
+  def get_complete_params(self):
+    """This function returns the complete set of 
+    parameters to initializer a docker container"""
+    parameters = self.params
+
+    if self.image:
+      parameters['image'] = self.image
+    if not self.name and parameters.get('name'):
+      self.name = parameters['name']
+    parameters['name'] = self.docker_id  
+    if self.command:
+      parameters['command'] = self.command
+    if self.environment:
+      parameters['environment'] = self.environment
+    parameters["volumes"] = self.get_volumes()
+    if self.devices:
+      if parameters.get('devices') is not None:
+        parameters['devices'] = parameters['devices'] + self.devices
+      else:
+        parameters['devices'] = self.devices
+
+    self.params = parameters
+    return parameters
+
+
+  def get_volumes(self):
+    volumes = []
+    v = self.params.get("volumes")
+    if self.params.get("volumes") is not None:
+      if isinstance(self.params.get("volumes"), list):
+        volumes+=self.params.get("volumes")
+      else:
+        volumes.append(self.params.get("volumes"))
+    if self.volume:
+      #volumes+=self.volume
+      if isinstance(self.volume, list):
+        volumes+=self.volume
+      else:
+        volumes.append(self.volume)
+    return volumes
+
 class PythiaServerApp(PythiaApp):
   def __init__(self, name, image, ip, command="", volume = False):
     super().__init__(name, image, command, volume)
@@ -30,19 +76,28 @@ class PythiaServerApp(PythiaApp):
     self.ip = ip
     
 class PythiaMECApp(PythiaApp):
-  def __init__(self, name, image, ip, host, command="", volume=False, environment=False):
-    super().__init__(name, image, command, volume)
+  def __init__(self, name, image, ip, host,
+               command="", volume=False,
+               environment=False, params={}):
+    super().__init__(name, image, command,
+                     volume=volume,
+                     environment=environment,
+                     params=params)
     self.docker_id = "MECApp-" + self.id_str
     self.ip = ip
     self.host = host
     self.environment = environment
 
 class PythiaUEApp(PythiaApp):
-  def __init__(self, name, image, command="", volume=False, devices=False, environment=False):
-    super().__init__(name, image, command, volume)
+  def __init__(self, name, image, command="",
+               volume=False, environment=False,
+               params={}, devices=False):
+    super().__init__(name, image, command,
+                     volume=volume,
+                     environment=environment,
+                     params=params)
     self.docker_id = "UEApp-" + self.id_str
     self.devices = devices
-    self.environment = environment
 
 class PythiaEmulationHost(DockerContainer):
   """A host represents either an UE or a MEC Host.

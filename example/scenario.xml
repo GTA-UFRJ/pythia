@@ -1,14 +1,10 @@
 <?xml version="1.0"?>
 <experiment>
   <ue name="ue0" positions_file="example/ue1_positions.csv">
-    <ue_app name="firefox_browser" image="firefox" command="--class=firefox-docker http://172.21.0.2:8080">
-      <volume>ue0:/output</volume>
-      <volume>/tmp/.X11-unix:/tmp/.X11-unix</volume>
-      <volume>/dev/shm:/dev/shm</volume>
-      <volume>/run/user/1000/pulse:/run/user/1000/pulse</volume>
-      <device>/dev/dri</device>
-      <environment>DISPLAY=:0</environment>
-      <environment>DISPLAY=:0</environment>
+    <ue_app name="firefox_browser" image="jlesage/firefox" command="">
+      <parameter key="volumes" value="/docker/appdata/firefox:/config:rw"/>
+      <!--parameter key="volumes" value="/docker/appdata/firefox:/config:rw"/-->
+ 
     </ue_app>
   </ue>
 
@@ -18,11 +14,13 @@
     <environment>HTTP_PORT=8080</environment>
   </mec_app>
 
-  <link ue="ue0" mec_host="mec0" latency="629" upload="5000" download="100Mbps" time="00"/>
-  <link ue="ue0" mec_host="mec0" latency="898" upload="5000" download="100Mbps" time="10"/>
-  <link ue="ue0" mec_host="mec0" latency="809" upload="5000" download="100Mbps" time="20"/>
-  <link ue="ue0" mec_host="mec0" latency="835" upload="5000" download="100Mbps" time="30"/>
-  <link ue="ue0" mec_host="mec0" latency="742" upload="5000" download="100Mbps" time="40"/>
-  <link ue="ue0" mec_host="mec0" latency="574" upload="5000" download="100Mbps" time="50"/>
-  <link ue="ue0" mec_host="mec0" latency="998" upload="5000" download="100Mbps" time="60"/>
+  <link ue="ue0" mec_host="mec0" latency="0" upload="100Mbps" download="100Mbps" time="00"/>
+  <link ue="ue0" mec_host="mec0" latency="0" upload="100Mbps" download="100Mbps" time="10"/>
+  <link ue="ue0" mec_host="mec0" latency="0" upload="100Mbps" download="100Mbps" time="20"/>
+  <link ue="ue0" mec_host="mec0" latency="0" upload="100Mbps" download="100Mbps" time="30"/>
+  <link ue="ue0" mec_host="mec0" latency="1" upload="100Mbps" download="100Mbps" time="40"/>
+  <link ue="ue0" mec_host="mec0" latency="1" upload="100Mbps" download="100Mbps" time="50"/>
+  <link ue="ue0" mec_host="mec0" latency="1" upload="100Mbps" download="100Mbps" time="6000"/>
 </experiment>
+
+

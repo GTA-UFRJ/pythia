@@ -25,18 +25,22 @@ def parse_scenario(filename):
       volumes = []
       devices = []
       environments = []
+      parameters = {}
       for volume_tag in ue_app_tag.iter('volume'):
         volumes.append(volume_tag.text)
       for device_tag in ue_app_tag.iter('device'):
         devices.append(device_tag.text)
       for environment_tag in ue_app_tag.iter('environment'):
         environments.append(environment_tag.text)
+
+      parameters = get_parameters(ue_app_tag)
       ue.apps.append(PythiaUEApp(ue_app_tag.attrib['name'],
                                 ue_app_tag.attrib['image'],
                                 ue_app_tag.attrib['command'],
                                 volume=volumes,
                                 devices=devices,
-                                environment=environments))
+                                environment=environments,
+                                params = parameters))
     UEs[ue.name] = ue
 
   #Creating MEC hosts
@@ -89,42 +93,18 @@ def write_link_states(filename):
 
   return 0
 
-"""write_topology("topology.xml", [{"name":"dashboard", 
-                                 "image":"kollaps/dashboard:1.0",
-                                 "supervisor":"true",
-                                 "port":"8088"},
-                                 {"name":"s1", 
-                                 "image":"img/example",
-                                 "command":""}],
-                                 [{"name":"b1"},{"name":"b1"}],
-                                 [{"origin":"client1",
-                                 "dest":"s1",
-                                 "latency":"10",
-                                 "upload":"100Mbps",
-                                "download":"100Mbps",
-                                "network":"kollaps_network"},
-                                {"origin":"client2",
-                                 "dest":"s2",
-                                 "latency":"10",
-                                 "upload":"100Mbps",
-                                "download":"100Mbps",
-                                "network":"kollaps_network"}],
-                                [{"name":"client1",
-                                "time":"0.0",
-                                "action":"join"}])"""
-
-
-
-
-
-
-
-
-
-
-
-#print(parse_input('../scenario.xml'))
-
-
-
-
+def get_parameters(app_tag):
+  params = {}
+  for parameter_tag in app_tag.iter('parameter'):
+    key = parameter_tag.attrib['key']
+    value = parameter_tag.attrib['value']
+    logging.info(f"The parameter values are {value}")
+    if params.get(key) is not None:
+      if isinstance(params.get(key), list):
+        params[key].append(value)
+      else:
+        params[key] = [params[key], value]
+    else:
+      params[key] = value
+    logging.info(f"The parameter values are {params['volumes']}")
+  return params

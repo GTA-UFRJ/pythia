@@ -35,18 +35,23 @@ def start_container(container):
 def create_volume(app):
   """This function creates a volume without attaching it to a
   container"""
-  print(app.volume)
   client.volumes.create(name = app.volume)
 
 def create_ue_volume(app):
   """This function creates a ue volume without attaching it to a
   container"""
 
-  for volume in app.volume:
+  logging.info(f"Creating volumes for {app.docker_id}")
+  logging.info(f"The volumes are {app.get_volumes()}")
+  for volume in app.get_volumes():
     if ":/output" in volume:
       parts = volume.split(":")
       ue_name = parts[0]
+    if ":rw" in volume:
+      parts = volume.split(":")
+      ue_name = parts[0]
 
+    logging.info(f"The ue_name is {ue_name}")
   client.volumes.create(name = ue_name)
 
 def create_external_app(app, network):
@@ -55,11 +60,9 @@ def create_external_app(app, network):
     app: the app to run
     network: the network to connect the app container to
   """
-  logging.info(f"Creating container {app.docker_id} from {app.image}, " +
-                f"with ip={app.ip}.")
-  
+
   # Initialize the base parameters for the container creation
-  params = {
+  """params = {
       "image": app.image,
       "name": app.docker_id,
       "command": app.command,
@@ -72,9 +75,15 @@ def create_external_app(app, network):
   if app.devices:
     params["devices"] = app.devices
   if app.environment:
-    params["environment"] = app.environment
+    params["environment"] = app.environment"""
 
+  logging.info(f"Creating container {app.docker_id} from {app.image}, " +
+                f"with ip={app.ip}.")
   # Call the create function with the dynamically built parameters
+  params = app.get_complete_params()
+  params["cap_add"] = ["NET_ADMIN"]
+  params['ports'] = {5800:5800}
+  logging.info(f"The parameters are {app.params}")
   client.containers.create(**params)
 
   # Connect the created container to the specified network with the given IP
@@ -102,6 +111,9 @@ def create_mec_app(app, network):
   if app.environment:
     params["environment"] = app.environment
 
+  params["cap_add"] = ["NET_ADMIN"]
+  params['ports'] = {8080:80,
+                     27960:27960}
   # Call the create function with the dynamically built parameters
   client.containers.create(**params)
 

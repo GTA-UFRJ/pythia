@@ -16,22 +16,25 @@ def run_firefox():
     
     device = ['/dev/dri']
     network_mode = 'host'
-    command = '--class=firefox-docker http://localhost:8080'
+    #network_mode = 'bridge'
+    command = '--class=firefox-docker http://www.google.com'
 
-    container = client.containers.create(
-        'firefox:latest',
-        command=command,
-        volumes=volumes,
-        environment=environment,
-        devices=device,
-        network_mode=network_mode
-    )
 
+    params = {
+        'image' : 'firefox:latest',
+        'command' : command,
+        'volumes' : volumes,
+        'environment' : environment,
+        'devices' : device,
+        'network_mode' : network_mode
+    }
+
+    container = client.containers.create(**params)
     container.start()
 
     # Manually handle removal of the container after it stops running
-    container.wait()
-    container.remove()
+#    container.wait()
+#   container.remove()
 
 if __name__ == "__main__":
     run_firefox()
