@@ -15,7 +15,7 @@ def run_firefox():
     ]
     
     device = ['/dev/dri']
-    network_mode = 'host'
+    network_mode = 'bridge'
     command = '--class=firefox-docker http://localhost:8080'
 
     container = client.containers.create(

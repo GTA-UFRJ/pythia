@@ -40,6 +40,8 @@ def emulate(networks, links):
       continue
     time.sleep(time_difference - emulation_time_error/2)
     print(f"Event = {event}")
+    while True:
+      pass
 
 def bootstrap(networks, mec_hosts, mec_apps, UEs, links, server_ip):
   # Need to create the ping_sender and ping_receiver containers.
@@ -83,7 +85,7 @@ def bootstrap(networks, mec_hosts, mec_apps, UEs, links, server_ip):
       docker_utils.create_ue_volume(ue_app)
       docker_utils.create_ue_app(ue_app, networks['ue'])
       docker_utils.start_container(ue_app)
-      docker_utils.connect_app_to_host(ue_app)
+      docker_utils.connect_app_to_host(ue_app, networks['ue'].interface)
 
   #Start MEC apps. Allocate them to first host
   #Todo: start MEC Apps through MEC System.
@@ -100,7 +102,8 @@ def bootstrap(networks, mec_hosts, mec_apps, UEs, links, server_ip):
 
     #Isso deveria estar aqui??
     docker_utils.start_container(mec_apps[mec_app])
-    docker_utils.connect_app_to_host(mec_apps[mec_app])
+    print(networks['mec'])
+    docker_utils.connect_app_to_host(mec_apps[mec_app], networks['mec'].interface)
 
   events_init = links
   connections = set()

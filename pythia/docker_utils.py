@@ -63,7 +63,7 @@ def create_external_app(app, network):
       "image": app.image,
       "name": app.docker_id,
       "command": app.command,
-      "cap_add": ["NET_ADMIN"]
+      "cap_add": ["NET_ADMIN"],
   }
   
   # Add volume if it exists
@@ -95,7 +95,8 @@ def create_mec_app(app, network):
       "image": app.image,
       "name": app.docker_id,
       "hostname" : app.name,
-      "cap_add": ["NET_ADMIN"]
+      "cap_add": ["NET_ADMIN"],
+      # "ports": {'80/tcp': 8080}
   }
   
   # Add volume if it exists
@@ -152,13 +153,14 @@ def connect(docker_container, network, ip):
   network.docker_obj.connect(c,ipv4_address=ip)
 
 
-def connect_app_to_host(app):
+def connect_app_to_host(app, network_interface):
   """This function connects an UEApp to its vUE or
   a MECApp to its vMEC."""
   gateway_ip = app.host.external_ip
   cmd = "ip route del default"
   execute_cmd(cmd, app.docker_id)
-  cmd = f"ip route add default via {gateway_ip}"
+  cmd = f"ip route add default via {gateway_ip} dev {network_interface}"
+  print(cmd)
   execute_cmd(cmd, app.docker_id)
   return 0
 

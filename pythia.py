@@ -83,7 +83,7 @@ for ue in UEs:
 
 try:
   #Bootstrap emulation
-  emulation.bootstrap(networks, mec_hosts, mec_apps,UEs, links, server_ip)
+  emulation.bootstrap(networks, mec_hosts, mec_apps, UEs, links, server_ip)
 
 except docker.errors.ImageNotFound as e:
   print(e)
