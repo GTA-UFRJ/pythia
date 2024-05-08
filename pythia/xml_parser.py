@@ -46,17 +46,23 @@ def parse_scenario(filename):
                                         mh_xml.attrib['cpu'],
                                         mh_xml.attrib['memmory'])
 
-  # Creating MEC apps
-  environments = []
-  for environment_tag in ue_app_tag.iter('environment'):
-    environments.append(environment_tag.text)
-  for ma_xml in root.iter('mec_app'):
-    mec_apps[ma_xml.attrib['name']] = PythiaMECApp(ma_xml.attrib['name'],
-                                 ma_xml.attrib['image'],
-                                 ma_xml.attrib['ip'],
-                                 ma_xml.attrib['host'],                  
-                                 ma_xml.attrib['command'],
-                                 environment=environments)
+    # Creating MEC apps
+    for ma_xml in root.iter('mec_app'):
+      environments = []
+      ports = {}
+      for environment_tag in ma_xml.iter('environment'):
+        environments.append(environment_tag.text)
+      for port_tag in ma_xml.iter('port'):
+        port_parts = port_tag.text.split(': ')
+        external_port, internal_port = port_parts[0].strip("'"), int(port_parts[1])
+        ports[external_port] = internal_port
+      mec_apps[ma_xml.attrib['name']] = PythiaMECApp(ma_xml.attrib['name'],
+                                  ma_xml.attrib['image'],
+                                  ma_xml.attrib['ip'],
+                                  ma_xml.attrib['host'],                  
+                                  ma_xml.attrib['command'],
+                                  environment=environments,
+                                  ports=ports)
 
   # Creating base stations
   """for bs_xml in root.iter('base_station'):

@@ -17,22 +17,22 @@ logging.basicConfig(level=logging.INFO)
 def emulate(networks, links):
   """This function runs the emulation phase of Pythia"""
 
-  #Create emulation events queue
+  # Create emulation events queue
   emu_times = []
   events_queue = links
   events_queue.sort(key=lambda x: x.time, reverse=True)
   emulation_zero = time.time()
   emulation_time_error = 0.1
   event = events_queue.pop()
-  #Start main emulation loop
+  # Start main emulation loop
   while(len(events_queue)):
     emulation_time = time.time() - emulation_zero
     time_difference = event.time - emulation_time
     if time_difference < emulation_time_error:
       logging.info(f"Event time = {event.time}, emu time = {emulation_time}, Time diff = {time_difference}")
       docker_utils.change_link(event.ue, event.mec_host,
-                               networks['infra'],
-                               event.upload, event.latency)
+                              networks['infra'],
+                              event.upload, event.latency)
       emu_times.append([emulation_time, time.time() - emulation_time ])
       event = events_queue.pop()
       time_difference = event.time - emulation_time

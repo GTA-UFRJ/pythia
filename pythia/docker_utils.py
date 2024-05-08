@@ -96,12 +96,13 @@ def create_mec_app(app, network):
       "name": app.docker_id,
       "hostname" : app.name,
       "cap_add": ["NET_ADMIN"],
-      # "ports": {'80/tcp': 8080}
   }
   
   # Add volume if it exists
   if app.environment:
     params["environment"] = app.environment
+  if app.ports:
+    params["ports"] = app.ports
 
   # Call the create function with the dynamically built parameters
   client.containers.create(**params)
@@ -156,6 +157,8 @@ def connect(docker_container, network, ip):
 def connect_app_to_host(app, network_interface):
   """This function connects an UEApp to its vUE or
   a MECApp to its vMEC."""
+  # cmd = "apt install iproute2 -y"
+  # execute_cmd(cmd, app.docker_id)
   gateway_ip = app.host.external_ip
   cmd = "ip route del default"
   execute_cmd(cmd, app.docker_id)
@@ -167,10 +170,20 @@ def connect_app_to_host(app, network_interface):
 def connect_app_to_app(ue_app, mec_app):
   """This function connects two apps, using their 
   hosts to route packets."""
-  cmd = f"ip route add {ue_app.ip} via {ue_app.host.infra_ip}"
+
+  cmd = "ip route del default"
+  execute_cmd(cmd, mec_app.host.docker_id)
+  execute_cmd(cmd, ue_app.host.docker_id)
+
+  ue_app_subnet = get_subnet_ip(ue_app.ip, 16)
+  mec_app_subnet = get_subnet_ip(mec_app.ip, 16)
+
+  cmd = f"ip route add {ue_app_subnet}/16 via {ue_app.host.infra_ip}"
+  print(cmd)
   execute_cmd(cmd, mec_app.host.docker_id)
 
-  cmd = f"ip route add {mec_app.ip} via {mec_app.host.infra_ip}"
+  cmd = f"ip route add {mec_app_subnet}/16 via {mec_app.host.infra_ip}"
+  print(cmd)
   execute_cmd(cmd, ue_app.host.docker_id)
 
 def execute_cmd(cmd, container_id):
@@ -300,3 +313,10 @@ def create_api_container(app, network):
   logging.info(f'IP is {app.ip}')
   connect(app, network, app.ip)
   return 0
+
+def get_subnet_ip(ip, bits):
+  ip_parts = ip.split('.')
+  subnet_ip_parts = ip_parts[:bits // 8]
+  subnet_ip_parts += ['0'] * (4 - len(subnet_ip_parts))
+  subnet_ip = '.'.join(subnet_ip_parts)
+  return subnet_ip

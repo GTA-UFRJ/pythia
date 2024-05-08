@@ -30,12 +30,13 @@ class PythiaServerApp(PythiaApp):
     self.ip = ip
     
 class PythiaMECApp(PythiaApp):
-  def __init__(self, name, image, ip, host, command="", volume=False, environment=False):
+  def __init__(self, name, image, ip, host, command="", volume=False, environment=False, ports=False):
     super().__init__(name, image, command, volume)
     self.docker_id = "MECApp-" + self.id_str
     self.ip = ip
     self.host = host
     self.environment = environment
+    self.ports = ports
 
 class PythiaUEApp(PythiaApp):
   def __init__(self, name, image, command="", volume=False, devices=False, environment=False):
