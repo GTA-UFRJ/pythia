@@ -14,7 +14,7 @@ class DockerContainer:
 
 
 class PythiaApp(DockerContainer):
-  def __init__(self, name, image, command="", volume = False):
+  def __init__(self, name, image, command="", volume=False, ports=False):
     super().__init__(image)
     self.host = None
     self.name = name
@@ -22,25 +22,25 @@ class PythiaApp(DockerContainer):
     self.docker_id = ""
     self.ip = ""
     self.volume = volume
+    self.ports = ports
     
 class PythiaServerApp(PythiaApp):
-  def __init__(self, name, image, ip, command="", volume = False):
+  def __init__(self, name, image, ip, command="", volume=False):
     super().__init__(name, image, command, volume)
     self.docker_id = "Server-" + self.id_str
     self.ip = ip
     
 class PythiaMECApp(PythiaApp):
   def __init__(self, name, image, ip, host, command="", volume=False, environment=False, ports=False):
-    super().__init__(name, image, command, volume)
+    super().__init__(name, image, command, volume, ports)
     self.docker_id = "MECApp-" + self.id_str
     self.ip = ip
     self.host = host
     self.environment = environment
-    self.ports = ports
 
 class PythiaUEApp(PythiaApp):
-  def __init__(self, name, image, command="", volume=False, devices=False, environment=False):
-    super().__init__(name, image, command, volume)
+  def __init__(self, name, image, command="", volume=False, devices=False, environment=False, ports=False):
+    super().__init__(name, image, command, volume, ports)
     self.docker_id = "UEApp-" + self.id_str
     self.devices = devices
     self.environment = environment

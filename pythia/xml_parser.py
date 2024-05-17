@@ -25,18 +25,25 @@ def parse_scenario(filename):
       volumes = []
       devices = []
       environments = []
+      ports = {}
       for volume_tag in ue_app_tag.iter('volume'):
         volumes.append(volume_tag.text)
       for device_tag in ue_app_tag.iter('device'):
         devices.append(device_tag.text)
       for environment_tag in ue_app_tag.iter('environment'):
         environments.append(environment_tag.text)
+
+      for port_tag in ue_app_tag.iter('port'):
+        port_parts = port_tag.text.split(': ')
+        external_port, internal_port = port_parts[0].strip("'"), int(port_parts[1])
+        ports[external_port] = internal_port
       ue.apps.append(PythiaUEApp(ue_app_tag.attrib['name'],
                                 ue_app_tag.attrib['image'],
                                 ue_app_tag.attrib['command'],
                                 volume=volumes,
                                 devices=devices,
-                                environment=environments))
+                                environment=environments,
+                                ports=ports))
     UEs[ue.name] = ue
 
   #Creating MEC hosts

@@ -72,8 +72,10 @@ def create_external_app(app, network):
     params["devices"] = app.devices
   if app.environment:
     params["environment"] = app.environment
+  if app.ports:
+    params["ports"] = app.ports
 
-  logging.info(f"Creating ue app with params {params}")
+  logging.info(f"Creating ue app with params {params}.")
 
   # Call the create function with the dynamically built parameters
   client.containers.create(**params)
