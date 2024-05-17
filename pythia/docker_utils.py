@@ -46,8 +46,7 @@ def create_ue_volume(app):
     if ":/output" in volume:
       parts = volume.split(":")
       ue_name = parts[0]
-
-  client.volumes.create(name = ue_name)
+      client.volumes.create(name = ue_name)
 
 def create_external_app(app, network):
   """This function creates an app container without running it.
@@ -73,6 +72,8 @@ def create_external_app(app, network):
     params["devices"] = app.devices
   if app.environment:
     params["environment"] = app.environment
+
+  logging.info(f"Creating ue app with params {params}")
 
   # Call the create function with the dynamically built parameters
   client.containers.create(**params)
@@ -104,10 +105,12 @@ def create_mec_app(app, network):
   if app.ports:
     params["ports"] = app.ports
 
+  logging.info(f"Creating mec app with params {params}")
   # Call the create function with the dynamically built parameters
   client.containers.create(**params)
 
   # Connect the created container to the specified network with the given IP
+  logging.info(f"Connecting mec app to {network} with ip {app.ip}")
   connect(app, network, app.ip)
 
 def create_ue_app(app, network):
@@ -154,35 +157,41 @@ def connect(docker_container, network, ip):
   network.docker_obj.connect(c,ipv4_address=ip)
 
 
-def connect_app_to_host(app, network_interface):
+def connect_app_to_host(app,
+                        network_interface,
+                        other_network_range):
   """This function connects an UEApp to its vUE or
   a MECApp to its vMEC."""
   # cmd = "apt install iproute2 -y"
   # execute_cmd(cmd, app.docker_id)
-  gateway_ip = app.host.external_ip
-  cmd = "ip route del default"
-  execute_cmd(cmd, app.docker_id)
-  cmd = f"ip route add default via {gateway_ip} dev {network_interface}"
+  #gateway_ip = app.host.external_ip
+  #cmd = "ip route del default"
+  #execute_cmd(cmd, app.docker_id)
+  #cmd = f"ip route add default via {gateway_ip} dev {network_interface}"
+  cmd = f"ip route add {other_network_range} via {app.host.external_ip}"
   print(cmd)
   execute_cmd(cmd, app.docker_id)
   return 0
 
-def connect_app_to_app(ue_app, mec_app):
+def connect_app_to_app(ue_app,
+                       ue_network_range,
+                       mec_app,
+                       mec_network_range):
   """This function connects two apps, using their 
   hosts to route packets."""
 
-  cmd = "ip route del default"
-  execute_cmd(cmd, mec_app.host.docker_id)
-  execute_cmd(cmd, ue_app.host.docker_id)
+  #cmd = "ip route del default"
+  #execute_cmd(cmd, mec_app.host.docker_id)
+  #execute_cmd(cmd, ue_app.host.docker_id)
 
-  ue_app_subnet = get_subnet_ip(ue_app.ip, 16)
-  mec_app_subnet = get_subnet_ip(mec_app.ip, 16)
+  #ue_app_subnet = get_subnet_ip(ue_app.ip, 16)
+  #mec_app_subnet = get_subnet_ip(mec_app.ip, 16)
 
-  cmd = f"ip route add {ue_app_subnet}/16 via {ue_app.host.infra_ip}"
+  cmd = f"ip route add {ue_network_range} via {ue_app.host.infra_ip}"
   print(cmd)
   execute_cmd(cmd, mec_app.host.docker_id)
 
-  cmd = f"ip route add {mec_app_subnet}/16 via {mec_app.host.infra_ip}"
+  cmd = f"ip route add {mec_network_range} via {mec_app.host.infra_ip}"
   print(cmd)
   execute_cmd(cmd, ue_app.host.docker_id)
 
