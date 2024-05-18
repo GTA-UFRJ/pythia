@@ -35,13 +35,11 @@ def start_container(container):
 def create_volume(app):
   """This function creates a volume without attaching it to a
   container"""
-  print(app.volume)
   client.volumes.create(name = app.volume)
 
 def create_ue_volume(app):
   """This function creates a ue volume without attaching it to a
   container"""
-
   for volume in app.volume:
     if ":/output" in volume:
       parts = volume.split(":")
@@ -75,8 +73,6 @@ def create_external_app(app, network):
   if app.ports:
     params["ports"] = app.ports
 
-  logging.info(f"Creating ue app with params {params}.")
-
   # Call the create function with the dynamically built parameters
   client.containers.create(**params)
 
@@ -107,12 +103,10 @@ def create_mec_app(app, network):
   if app.ports:
     params["ports"] = app.ports
 
-  logging.info(f"Creating mec app with params {params}")
   # Call the create function with the dynamically built parameters
   client.containers.create(**params)
 
   # Connect the created container to the specified network with the given IP
-  logging.info(f"Connecting mec app to {network} with ip {app.ip}")
   connect(app, network, app.ip)
 
 def create_ue_app(app, network):
@@ -164,14 +158,7 @@ def connect_app_to_host(app,
                         other_network_range):
   """This function connects an UEApp to its vUE or
   a MECApp to its vMEC."""
-  # cmd = "apt install iproute2 -y"
-  # execute_cmd(cmd, app.docker_id)
-  #gateway_ip = app.host.external_ip
-  #cmd = "ip route del default"
-  #execute_cmd(cmd, app.docker_id)
-  #cmd = f"ip route add default via {gateway_ip} dev {network_interface}"
   cmd = f"ip route add {other_network_range} via {app.host.external_ip}"
-  print(cmd)
   execute_cmd(cmd, app.docker_id)
   return 0
 
@@ -182,19 +169,10 @@ def connect_app_to_app(ue_app,
   """This function connects two apps, using their 
   hosts to route packets."""
 
-  #cmd = "ip route del default"
-  #execute_cmd(cmd, mec_app.host.docker_id)
-  #execute_cmd(cmd, ue_app.host.docker_id)
-
-  #ue_app_subnet = get_subnet_ip(ue_app.ip, 16)
-  #mec_app_subnet = get_subnet_ip(mec_app.ip, 16)
-
   cmd = f"ip route add {ue_network_range} via {ue_app.host.infra_ip}"
-  print(cmd)
   execute_cmd(cmd, mec_app.host.docker_id)
 
   cmd = f"ip route add {mec_network_range} via {mec_app.host.infra_ip}"
-  print(cmd)
   execute_cmd(cmd, ue_app.host.docker_id)
 
 def execute_cmd(cmd, container_id):
@@ -212,11 +190,9 @@ def start_link(vUE, vmec_host,
   delay and distribution are in ms.
   """
   #Execute on host a
-  logging.info(f"Start from {vUE.docker_id} to {vmec_host.docker_id}.")
   start_link_on_host(vUE, vmec_host, network.interface,'vUE')
 
   #Execute on host b
-  logging.info(f"Start from {vmec_host.docker_id} to {vUE.docker_id}.")
   start_link_on_host(vmec_host, vUE, network.interface,'vmec')
 
 def start_link_on_host(host, dst, interface, side):
@@ -250,17 +226,12 @@ def change_link(vUE, vmec_host,
   bitrate is on kbits
   delay and distribution are in ms.
   """
-  #logging.info("Vou mudar")
-  #Execute on host a
-  logging.info(f"From {vUE.docker_id} to {vmec_host.docker_id}.")
   change_link_on_host(vUE, vmec_host, network.interface,
                       bitrate, float(delay)/2, 'vUE')
 
   #Execute on host b
-  logging.info(f"From {vmec_host.docker_id} to {vUE.docker_id}.")
   change_link_on_host(vmec_host, vUE, network.interface,
                       bitrate, float(delay)/2, 'vmec')
-  #logging.info("Mudei")
 
 def change_link_on_host(host, dst, interface,
                         bitrate, delay, side):
@@ -280,42 +251,6 @@ def change_link_on_host(host, dst, interface,
       for cmd in cmds:
         execute_cmd(cmd, host.docker_id)
 
-def old_change_link(ue_app, mec_app,
-                ue_network, mec_network,
-                bitrate, delay, distribution=0):
-  """
-  This function changes the link between two pythia apps.
-  bitrate is on kbits
-  delay and distribution are in ms.
-  """
-  logging.info("Vou mudar")
-  #Execute on host a
-  old_change_link_on_host(ue_app, mec_app.ip, ue_network.interface,
-                      bitrate, float(delay)/2)
-
-  #Execute on host b
-  old_change_link_on_host(mec_app, ue_app.ip, mec_network.interface,
-                      bitrate, float(delay)/2)
-  logging.info("Mudei")
-
-
-def old_change_link_on_host(host, ip_dst, interface,
-                        bitrate, delay):
-  
-  cmds = [f"tc qdisc replace dev {interface} root handle 1: prio",
-  f"tc qdisc replace dev {interface} parent 1:3 "+
-  f"handle 30: tbf rate {bitrate}kbit buffer 1600 limit 3000",
-
-  f"tc qdisc replace dev {interface} parent 30:1 "+
-  f"handle 31: netem delay {delay}ms",
-  
-  f"tc filter replace dev {interface} protocol ip parent 1: prio 3 "+
-  f"u32 match ip dst {ip_dst} flowid 1:3"]
-
-  for cmd in cmds:
-    result = str(execute_cmd(cmd, host.docker_id).output)
-    #logging.info(result)
-
 def create_api_container(app, network):
   client.containers.create(app.image,
                              name=app.docker_id,
@@ -324,10 +259,3 @@ def create_api_container(app, network):
   logging.info(f'IP is {app.ip}')
   connect(app, network, app.ip)
   return 0
-
-def get_subnet_ip(ip, bits):
-  ip_parts = ip.split('.')
-  subnet_ip_parts = ip_parts[:bits // 8]
-  subnet_ip_parts += ['0'] * (4 - len(subnet_ip_parts))
-  subnet_ip = '.'.join(subnet_ip_parts)
-  return subnet_ip

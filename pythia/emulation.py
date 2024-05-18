@@ -29,7 +29,8 @@ def emulate(networks, links):
     emulation_time = time.time() - emulation_zero
     time_difference = event.time - emulation_time
     if time_difference < emulation_time_error:
-      logging.info(f"Event time = {event.time}, emu time = {emulation_time}, Time diff = {time_difference}")
+      #logging.info(f"Event time = {event.time}, emu time = {emulation_time}, Time diff = {time_difference}")
+      logging.info(f"Changing latency between {event.ue.docker_id} and {event.mec_host.docker_id} to {event.latency}ms.")
       docker_utils.change_link(event.ue, event.mec_host,
                               networks['infra'],
                               event.upload, event.latency)
@@ -39,9 +40,6 @@ def emulate(networks, links):
     if time_difference < 0:
       continue
     time.sleep(time_difference - emulation_time_error/2)
-    print(f"Event = {event}")
-    #while True:
-    #pass
 
 def bootstrap(networks, mec_hosts, mec_apps, UEs, links, server_ip):
   # Need to create the ping_sender and ping_receiver containers.
@@ -57,7 +55,6 @@ def bootstrap(networks, mec_hosts, mec_apps, UEs, links, server_ip):
   # ip's to the virtual mec hosts
   for mec_app in mec_apps:
     mec_apps[mec_app].ip = networks['mec'].allocate_ip(mec_apps[mec_app].ip)
-
 
   #Create MECHosts
   for vmh in mec_hosts:
@@ -83,7 +80,6 @@ def bootstrap(networks, mec_hosts, mec_apps, UEs, links, server_ip):
       ue_app.ip = networks['ue'].allocate_ip()
       ue_app.host = UEs[vUE]
       docker_utils.create_ue_volume(ue_app)
-      print(f"UE ports = {ue_app.ports}")
       docker_utils.create_ue_app(ue_app, networks['ue'])
       docker_utils.start_container(ue_app)
       docker_utils.connect_app_to_host(ue_app,
@@ -106,9 +102,7 @@ def bootstrap(networks, mec_hosts, mec_apps, UEs, links, server_ip):
                                         mec_apps[mec_app],
                                         networks['mec'].ip_range)
 
-    #Isso deveria estar aqui??
     docker_utils.start_container(mec_apps[mec_app])
-    print(networks['mec'])
     docker_utils.connect_app_to_host(mec_apps[mec_app],
                                      networks['mec'].interface,
                                      networks['ue'].ip_range)
@@ -122,26 +116,11 @@ def bootstrap(networks, mec_hosts, mec_apps, UEs, links, server_ip):
     element[0].add_new_peer(element[1].infra_ip)
     element[1].add_new_peer(element[0].infra_ip)
     docker_utils.start_link(element[0], element[1], networks['infra'])
-
-  
-  # Teste de API
     
   server_app = structures.PythiaServerApp(name='server', image='apps_list:latest', ip=server_ip)
   docker_utils.create_api_container(server_app, networks['ue'])
   docker_utils.start_container(server_app)
-"""
-def start(mec_hosts, UEs, mec_apps):
-  for vmh in mec_hosts:
-    docker_utils.start_container(mec_hosts[vmh])
 
-  for vUE in UEs:
-    docker_utils.start_container(UEs[vUE])
-    for app in UEs[vUE].apps:
-      docker_utils.start_container(app)
-
-  for app in mec_apps:
-    docker_utils.start_container(mec_apps[app])
-"""
 def finish(networks, mec_hosts, UEs):
   """This function removes all the containers 
   and networks from docker"""

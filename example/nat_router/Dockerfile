@@ -3,7 +3,7 @@ FROM python:3
 ADD ./nat_router.py /
 
 RUN apt update
-RUN apt install iproute2 -y; apt install iputils-ping -y; apt install iptables -y
+RUN apt install iproute2 -y; apt install iputils-ping -y; apt install iptables -y; apt install tcpdump -y
 
 RUN pip3 install requests
 

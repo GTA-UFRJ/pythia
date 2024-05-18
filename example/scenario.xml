@@ -1,19 +1,11 @@
 <?xml version="1.0"?>
 <experiment>
-  <!--ue name="ue0" positions_file="example/ue1_positions.csv">
-    <ue_app name="firefox_browser" image="firefox" command="-class=firefox-docker http://172.21.0.1:8080/">
-      <volume>ue0:/output</volume>
-      <volume>/tmp/.X11-unix:/tmp/.X11-unix</volume>
-      <volume>/dev/shm:/dev/shm</volume>
-      <volume>/run/user/1000/pulse:/run/user/1000/pulse</volume>
-      <device>/dev/dri</device>
-      <environment>DISPLAY=:0</environment>
-      <environment>'PULSE_SERVER=unix:/run/user/1000/pulse/native'</environment>
-    </ue_app>
-  </ue-->
-
   <ue name="ue0" positions_file="example/ue1_positions.csv">
-    <ue_app name="ping_sender0" image="pythia:vUE" command="" volume="ue0">
+    <!--ue_app name="ping_sender0" image="pythia:vUE" command="" volume="ue0">
+      <port>'8080/tcp': 8080</port>
+      <port>'27960/tcp': 27960</port>
+    </ue_app-->
+    <ue_app name="nat_router" image="nat_router" command="" volume="ue0">
       <port>'8080/tcp': 8080</port>
       <port>'27960/tcp': 27960</port>
     </ue_app>
@@ -21,27 +13,30 @@
 
   <mec_host name="mec0" memmory="1" cpu="2"/>
 
-  <mec_app name="quakejs" image="treyyoder/quakejs" ip="172.21.0.2" host="mec0" command="">
+  <mec_app name="quakejs" image="pythiademo/quakejs" ip="172.21.0.2" host="mec0" command="">
     <environment>HTTP_PORT=8080</environment>
-    <!--port>'80/tcp': 8001</port>
-    <!port>'80/tcp': 8080</port>
-    <port>'27960/tcp': 27960</port-->
   </mec_app>
 
-  <!--mec_app name="nginx" image="nginxdemos/hello" ip="172.21.0.2" host="mec0" command="">
-    <environment>HTTP_PORT=8080</environment>
-    <!port>'80/tcp': 8001</port>
-    <!environment>HTTP_PORT=8080</environment>
-    <!port>'80/tcp': 8080</port>
-    <port>'27960/tcp': 27960</port>
-  </mec_app-->
-
   <link ue="ue0" mec_host="mec0" latency="00" upload="100Mbps" download="100Mbps" time="00"/>
-  <!--link ue="ue0" mec_host="mec0" latency="200" upload="5000" download="100Mbps" time="10"/>
-  <link ue="ue0" mec_host="mec0" latency="100" upload="5000" download="100Mbps" time="20"/>
-  <link ue="ue0" mec_host="mec0" latency="200" upload="5000" download="100Mbps" time="30"/>
-  <link ue="ue0" mec_host="mec0" latency="100" upload="5000" download="100Mbps" time="40"/>
-  <link ue="ue0" mec_host="mec0" latency="200" upload="5000" download="100Mbps" time="50"/>
-  <link ue="ue0" mec_host="mec0" latency="100" upload="5000" download="100Mbps" time="60"/-->
-  <link ue="ue0" mec_host="mec0" latency="0" upload="50000" download="100Mbps" time="100000"/>
+  <link ue="ue0" mec_host="mec0" latency="500" upload="100Mbps" download="100Mbps" time="10"/>
+  <!--link ue="ue0" mec_host="mec0" latency="200" upload="100Mbps" download="100Mbps" time="20"/>
+  <link ue="ue0" mec_host="mec0" latency="300" upload="100Mbps" download="100Mbps" time="30"/>
+  <link ue="ue0" mec_host="mec0" latency="100" upload="100Mbps" download="100Mbps" time="40"/>
+  <link ue="ue0" mec_host="mec0" latency="200" upload="100Mbps" download="100Mbps" time="50"/>
+  <link ue="ue0" mec_host="mec0" latency="300" upload="100Mbps" download="100Mbps" time="60"/>
+  <link ue="ue0" mec_host="mec0" latency="00" upload="100Mbps" download="100Mbps" time="00"/>
+  <link ue="ue0" mec_host="mec0" latency="100" upload="100Mbps" download="100Mbps" time="10"/>
+  <link ue="ue0" mec_host="mec0" latency="200" upload="100Mbps" download="100Mbps" time="20"/>
+  <link ue="ue0" mec_host="mec0" latency="300" upload="100Mbps" download="100Mbps" time="30"/>
+  <link ue="ue0" mec_host="mec0" latency="100" upload="100Mbps" download="100Mbps" time="40"/>
+  <link ue="ue0" mec_host="mec0" latency="200" upload="100Mbps" download="100Mbps" time="50"/>
+  <link ue="ue0" mec_host="mec0" latency="300" upload="100Mbps" download="100Mbps" time="60"/-->
+
+  <!--link ue="ue0" mec_host="mec0" latency="20" upload="100Mbps" download="100Mbps" time="10"/>
+  <link ue="ue0" mec_host="mec0" latency="10" upload="100Mbps" download="100Mbps" time="20"/>
+  <link ue="ue0" mec_host="mec0" latency="20" upload="100Mbps" download="100Mbps" time="30"/>
+  <link ue="ue0" mec_host="mec0" latency="10" upload="100Mbps" download="100Mbps" time="40"/>
+  <link ue="ue0" mec_host="mec0" latency="20" upload="100Mbps" download="100Mbps" time="50"/>
+  <link ue="ue0" mec_host="mec0" latency="10" upload="100Mbps" download="100Mbps" time="60"/-->
+  <link ue="ue0" mec_host="mec0" latency="0" upload="100Mbps0" download="100Mbps" time="100000"/>
 </experiment>
