@@ -1,10 +1,6 @@
 <?xml version="1.0"?>
 <experiment>
   <ue name="ue0" positions_file="example/ue1_positions.csv">
-    <!--ue_app name="ping_sender0" image="pythia:vUE" command="" volume="ue0">
-      <port>'8080/tcp': 8080</port>
-      <port>'27960/tcp': 27960</port>
-    </ue_app-->
     <ue_app name="nat_router" image="nat_router" command="" volume="ue0">
       <port>'8080/tcp': 8080</port>
       <port>'27960/tcp': 27960</port>
@@ -18,25 +14,21 @@
   </mec_app>
 
   <link ue="ue0" mec_host="mec0" latency="00" upload="100Mbps" download="100Mbps" time="00"/>
-  <link ue="ue0" mec_host="mec0" latency="500" upload="100Mbps" download="100Mbps" time="10"/>
-  <!--link ue="ue0" mec_host="mec0" latency="200" upload="100Mbps" download="100Mbps" time="20"/>
-  <link ue="ue0" mec_host="mec0" latency="300" upload="100Mbps" download="100Mbps" time="30"/>
-  <link ue="ue0" mec_host="mec0" latency="100" upload="100Mbps" download="100Mbps" time="40"/>
-  <link ue="ue0" mec_host="mec0" latency="200" upload="100Mbps" download="100Mbps" time="50"/>
-  <link ue="ue0" mec_host="mec0" latency="300" upload="100Mbps" download="100Mbps" time="60"/>
-  <link ue="ue0" mec_host="mec0" latency="00" upload="100Mbps" download="100Mbps" time="00"/>
-  <link ue="ue0" mec_host="mec0" latency="100" upload="100Mbps" download="100Mbps" time="10"/>
-  <link ue="ue0" mec_host="mec0" latency="200" upload="100Mbps" download="100Mbps" time="20"/>
-  <link ue="ue0" mec_host="mec0" latency="300" upload="100Mbps" download="100Mbps" time="30"/>
-  <link ue="ue0" mec_host="mec0" latency="100" upload="100Mbps" download="100Mbps" time="40"/>
-  <link ue="ue0" mec_host="mec0" latency="200" upload="100Mbps" download="100Mbps" time="50"/>
-  <link ue="ue0" mec_host="mec0" latency="300" upload="100Mbps" download="100Mbps" time="60"/-->
+  <link ue="ue0" mec_host="mec0" latency="20" upload="100Mbps" download="100Mbps" time="20"/>
+  <link ue="ue0" mec_host="mec0" latency="00" upload="100Mbps" download="100Mbps" time="40"/>
+  <link ue="ue0" mec_host="mec0" latency="100" upload="100Mbps" download="100Mbps" time="60"/>
+  <link ue="ue0" mec_host="mec0" latency="80" upload="100Mbps" download="100Mbps" time="80"/>
+  <link ue="ue0" mec_host="mec0" latency="10" upload="100Mbps" download="100Mbps" time="100"/>
+  <link ue="ue0" mec_host="mec0" latency="10" upload="100Mbps" download="100Mbps" time="120"/>
+  <link ue="ue0" mec_host="mec0" latency="50" upload="100Mbps" download="100Mbps" time="140"/>
+  <link ue="ue0" mec_host="mec0" latency="20" upload="100Mbps" download="100Mbps" time="160"/>
+  <link ue="ue0" mec_host="mec0" latency="300" upload="100Mbps" download="100Mbps" time="180"/>
+  <link ue="ue0" mec_host="mec0" latency="200" upload="100Mbps" download="100Mbps" time="200"/>
+  <link ue="ue0" mec_host="mec0" latency="90" upload="100Mbps" download="100Mbps" time="220"/>
+  <link ue="ue0" mec_host="mec0" latency="20" upload="100Mbps" download="100Mbps" time="240"/>
+  <link ue="ue0" mec_host="mec0" latency="60" upload="100Mbps" download="100Mbps" time="260"/>
+  <link ue="ue0" mec_host="mec0" latency="90" upload="100Mbps" download="100Mbps" time="280"/>
+  <link ue="ue0" mec_host="mec0" latency="1200" upload="100Mbps" download="100Mbps" time="300"/>
 
-  <!--link ue="ue0" mec_host="mec0" latency="20" upload="100Mbps" download="100Mbps" time="10"/>
-  <link ue="ue0" mec_host="mec0" latency="10" upload="100Mbps" download="100Mbps" time="20"/>
-  <link ue="ue0" mec_host="mec0" latency="20" upload="100Mbps" download="100Mbps" time="30"/>
-  <link ue="ue0" mec_host="mec0" latency="10" upload="100Mbps" download="100Mbps" time="40"/>
-  <link ue="ue0" mec_host="mec0" latency="20" upload="100Mbps" download="100Mbps" time="50"/>
-  <link ue="ue0" mec_host="mec0" latency="10" upload="100Mbps" download="100Mbps" time="60"/-->
-  <link ue="ue0" mec_host="mec0" latency="0" upload="100Mbps0" download="100Mbps" time="100000"/>
+
 </experiment>
