@@ -14,15 +14,25 @@
   </mec_app>
 
   <link ue="ue0" mec_host="mec0" latency="00" upload="100Mbps" download="100Mbps" time="00"/>
-  <link ue="ue0" mec_host="mec0" latency="500" upload="100Mbps" download="100Mbps" time="30"/>
+  <link ue="ue0" mec_host="mec0" latency="800" upload="100Mbps" download="100Mbps" time="15"/>
+  <link ue="ue0" mec_host="mec0" latency="400" upload="100Mbps" download="100Mbps" time="30"/>
+  <link ue="ue0" mec_host="mec0" latency="100" upload="100Mbps" download="100Mbps" time="45"/>
   <link ue="ue0" mec_host="mec0" latency="200" upload="100Mbps" download="100Mbps" time="60"/>
-  <link ue="ue0" mec_host="mec0" latency="00" upload="100Mbps" download="100Mbps" time="90"/>
-  <link ue="ue0" mec_host="mec0" latency="400" upload="100Mbps" download="100Mbps" time="120"/>
-  <link ue="ue0" mec_host="mec0" latency="100" upload="100Mbps" download="100Mbps" time="150"/>
-  <link ue="ue0" mec_host="mec0" latency="100" upload="100Mbps" download="100Mbps" time="180"/>
+  <link ue="ue0" mec_host="mec0" latency="00" upload="100Mbps" download="100Mbps" time="75"/>
+  <link ue="ue0" mec_host="mec0" latency="70" upload="100Mbps" download="100Mbps" time="90"/>
+  <link ue="ue0" mec_host="mec0" latency="500" upload="100Mbps" download="100Mbps" time="105"/>
+  <link ue="ue0" mec_host="mec0" latency="600" upload="100Mbps" download="100Mbps" time="120"/>
+  <link ue="ue0" mec_host="mec0" latency="00" upload="100Mbps" download="100Mbps" time="135"/>
+  <link ue="ue0" mec_host="mec0" latency="50" upload="100Mbps" download="100Mbps" time="150"/>
+  <link ue="ue0" mec_host="mec0" latency="500" upload="100Mbps" download="100Mbps" time="165"/>
+  <link ue="ue0" mec_host="mec0" latency="900" upload="100Mbps" download="100Mbps" time="180"/>
+  <link ue="ue0" mec_host="mec0" latency="10" upload="100Mbps" download="100Mbps" time="195"/>
   <link ue="ue0" mec_host="mec0" latency="350" upload="100Mbps" download="100Mbps" time="210"/>
-  <link ue="ue0" mec_host="mec0" latency="20" upload="100Mbps" download="100Mbps" time="240"/>
+  <link ue="ue0" mec_host="mec0" latency="00" upload="100Mbps" download="100Mbps" time="225"/>
+  <link ue="ue0" mec_host="mec0" latency="800" upload="100Mbps" download="100Mbps" time="240"/>
+  <link ue="ue0" mec_host="mec0" latency="500" upload="100Mbps" download="100Mbps" time="255"/>
   <link ue="ue0" mec_host="mec0" latency="300" upload="100Mbps" download="100Mbps" time="270"/>
+  <link ue="ue0" mec_host="mec0" latency="750" upload="100Mbps" download="100Mbps" time="285"/>
   <link ue="ue0" mec_host="mec0" latency="00" upload="100Mbps" download="100Mbps" time="300"/>
 
 </experiment>
