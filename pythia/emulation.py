@@ -49,6 +49,9 @@ def bootstrap(networks, mec_hosts, mec_apps, UEs, links, server_ip):
   It creates the emulation scenario inside docker, 
   with UEs and MECHosts, their networks and ips."""
 
+  # Initializes the swarm
+  docker_utils.swarm_init()
+
   #Create networks
   for net in networks:
     docker_utils.create_network(networks[net])

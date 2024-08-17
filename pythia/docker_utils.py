@@ -1,25 +1,52 @@
 """This file gathers functions related to docker"""
 import subprocess
-import os
+import os, sys
 import docker
 import logging
 
 #Obtaining docker client
 client = docker.from_env()
 
+def swarm_init():
+  # Initializes the swarm
+  try:
+      response = client.swarm.init()
+      print("Swarm initialized successfully.")
+
+      # Retrieve swarm information
+      swarm_info = client.swarm.attrs
+
+      # Print the command to join as a worker
+      worker_token = swarm_info.get('JoinTokens', {}).get('Worker')
+      if worker_token:
+          print(f"Command to join as a worker: docker swarm join --token {worker_token} {client.info().get('Swarm', {}).get('RemoteManagers', [{}])[0].get('Addr')}")
+
+      # Print the command to join as a manager
+      manager_token = swarm_info.get('JoinTokens', {}).get('Manager')
+      if manager_token:
+          print(f"Command to join as a manager: docker swarm join --token {manager_token} {client.info().get('Swarm', {}).get('RemoteManagers', [{}])[0].get('Addr')}")
+
+  except docker.errors.APIError as e:
+      if "This node is already part of a swarm" in str(e):
+          print("This node is already part of a swarm.")
+      else:
+          print(f"Failed to initialize swarm: {e}")
+      sys.exit(1)
+  return 0
+
 def create_host(host, infra_network, external_network):
-    """This function creates a host container without running it.
-    Parameters:
-      host: the PythiaEmulationHost object 
-    """
-    logging.info(f"Creating container {host.docker_id} from {host.image}, "+
-      f"with infra_ip={host.infra_ip}, and external_ip={host.external_ip}.")
-    client.containers.create(host.image,
-                             name=host.docker_id,
-                             cap_add=["NET_ADMIN"])
-    connect(host, infra_network, host.infra_ip)
-    connect(host, external_network, host.external_ip)
-    return 0
+  """This function creates a host container without running it.
+  Parameters:
+    host: the PythiaEmulationHost object 
+  """
+  logging.info(f"Creating container {host.docker_id} from {host.image}, "+
+    f"with infra_ip={host.infra_ip}, and external_ip={host.external_ip}.")
+  client.containers.create(host.image,
+                            name=host.docker_id,
+                            cap_add=["NET_ADMIN"])
+  connect(host, infra_network, host.infra_ip)
+  connect(host, external_network, host.external_ip)
+  return 0
 
 def remove_container(container):
   """This function removes the container that
