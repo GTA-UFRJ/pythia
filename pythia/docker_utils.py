@@ -165,19 +165,14 @@ def create_network(network):
   name already exists, it is removed"""
   delete_network(network)
 
-  ipam_pool = docker.types.IPAMPool(
-                           subnet=network.ip_range)
-  ipam_config = docker.types.IPAMConfig(
-    pool_configs=[ipam_pool])
+  ipam_pool = docker.types.IPAMPool(subnet=network.ip_range)
+  ipam_config = docker.types.IPAMConfig(pool_configs=[ipam_pool])
   network.docker_obj = client.networks.create(
                          network.name,
-                         driver="bridge",
+                         driver="overlay",
                          attachable=True,
                          ipam=ipam_config,
-                         options={
-                         "com.docker.network."+
-                         "container_iface_prefix":network.interface_prefix})
-
+                         options={"com.docker.network.container_iface_prefix":network.interface_prefix})
 
 
 def connect(docker_container, network, ip):
@@ -198,7 +193,6 @@ def connect_app_to_host(app,
   #execute_cmd(cmd, app.docker_id)
   #cmd = f"ip route add default via {gateway_ip} dev {network_interface}"
   cmd = f"ip route add {other_network_range} via {app.host.external_ip}"
-  print(cmd)
   execute_cmd(cmd, app.docker_id)
   return 0
 
@@ -217,11 +211,9 @@ def connect_app_to_app(ue_app,
   #mec_app_subnet = get_subnet_ip(mec_app.ip, 16)
 
   cmd = f"ip route add {ue_network_range} via {ue_app.host.infra_ip}"
-  print(cmd)
   execute_cmd(cmd, mec_app.host.docker_id)
 
   cmd = f"ip route add {mec_network_range} via {mec_app.host.infra_ip}"
-  print(cmd)
   execute_cmd(cmd, ue_app.host.docker_id)
 
 def execute_cmd(cmd, container_id):

@@ -61,7 +61,6 @@ def bootstrap(networks, mec_hosts, mec_apps, UEs, links, server_ip):
   for mec_app in mec_apps:
     mec_apps[mec_app].ip = networks['mec'].allocate_ip(mec_apps[mec_app].ip)
 
-
   #Create MECHosts
   for vmh in mec_hosts:
     mec_hosts[vmh].infra_ip = networks['infra'].allocate_ip()
@@ -109,9 +108,7 @@ def bootstrap(networks, mec_hosts, mec_apps, UEs, links, server_ip):
                                         mec_apps[mec_app],
                                         networks['mec'].ip_range)
 
-    #Isso deveria estar aqui??
     docker_utils.start_container(mec_apps[mec_app])
-    print(networks['mec'])
     docker_utils.connect_app_to_host(mec_apps[mec_app],
                                      networks['mec'].interface,
                                      networks['ue'].ip_range)
@@ -128,7 +125,6 @@ def bootstrap(networks, mec_hosts, mec_apps, UEs, links, server_ip):
 
   
   # Teste de API
-    
   server_app = structures.PythiaServerApp(name='server', image='apps_list:latest', ip=server_ip)
   docker_utils.create_api_container(server_app, networks['ue'])
   docker_utils.start_container(server_app)

@@ -10,7 +10,7 @@ host = sys.argv[1]
 # Set the amount of time the program will run for
 startTime = time.time()
 timeElapsed = 0
-timeLimit = 50
+timeLimit = 5000000000 # Was 50 before
 
 def DetectLatency(host):
     timeOfRequest = datetime.now()
