@@ -3,6 +3,7 @@ import subprocess
 import os, sys
 import docker
 import logging
+import ipaddress
 
 #Obtaining docker client
 client = docker.from_env()
@@ -141,6 +142,7 @@ def create_mec_app(app, network):
   # Connect the created container to the specified network with the given IP
   logging.info(f"Connecting mec app to {network} with ip {app.ip}")
   connect(app, network, app.ip)
+  rename_interface(network, app.docker_id)
 
 def create_ue_app(app, network):
   """This function creates an app container without running it.
@@ -222,6 +224,19 @@ def execute_cmd(cmd, container_id):
   container = client.containers.get(container_id)
   return container.exec_run(cmd)
 
+def rename_interface(network_range, network_interface, container_id):
+  subnet_fixed_positions = get_subnet_fixed_positions(network_range)
+  shell_command = (
+    "sh -c '"
+    "INTERFACE_1=$(ip -o addr show | grep \"%s\" | awk \"{print $2}\" | cut -d \"@\" -f 1); "
+    "if [ -n \"$INTERFACE_1\" ]; then "
+    "ip link set $INTERFACE_1 down; "
+    "ip link set $INTERFACE_1 name %s; "
+    "ip link set %s up; "
+    "else echo \"Interface for my_overlay_network_1 not found.\"; "
+    "fi'"
+    ) % (subnet_fixed_positions, network_interface)
+  execute_cmd(shell_command, container_id)
 
 def start_link(vUE, vmec_host,
                 network, distribution=0):
@@ -350,3 +365,12 @@ def get_subnet_ip(ip, bits):
   subnet_ip_parts += ['0'] * (4 - len(subnet_ip_parts))
   subnet_ip = '.'.join(subnet_ip_parts)
   return subnet_ip
+
+def get_subnet_fixed_positions(subnet_str):
+  subnet = ipaddress.ip_network(subnet_str, strict=False)
+  network_address = subnet.network_address
+  prefix_length = subnet.prefixlen
+  fixed_octets = prefix_length // 8
+  fixed_positions = '.'.join(str(network_address).split('.')[:fixed_octets])
+
+  return fixed_positions
