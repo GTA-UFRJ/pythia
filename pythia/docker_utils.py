@@ -142,7 +142,6 @@ def create_mec_app(app, network):
   # Connect the created container to the specified network with the given IP
   logging.info(f"Connecting mec app to {network} with ip {app.ip}")
   connect(app, network, app.ip)
-  print(network.ip_range, network.interface_prefix, app.docker_id)
 
 def create_ue_app(app, network):
   """This function creates an app container without running it.
@@ -225,7 +224,7 @@ def execute_cmd(cmd, container_id):
   return container.exec_run(cmd)
 
 def rename_container_interface(network_range, network_interface, container_id):
-  subnet_fixed_positions = get_subnet_fixed_positions(network_range)
+  subnet_fixed_positions = get_network_prefix(network_range)
 
   # print(f'sh -c "ip -o addr show | grep \'{subnet_fixed_positions}\' | awk \'{{print $2}}\' | cut -d \':\' -f1"')
   interface = execute_cmd(f'sh -c "ip -o addr show | grep \'{subnet_fixed_positions}\' | awk \'{{print $2}}\' | cut -d \':\' -f1"', container_id)[1].decode().strip()
@@ -362,11 +361,19 @@ def get_subnet_ip(ip, bits):
   subnet_ip = '.'.join(subnet_ip_parts)
   return subnet_ip
 
-def get_subnet_fixed_positions(subnet_str):
-  subnet = ipaddress.ip_network(subnet_str, strict=False)
-  network_address = subnet.network_address
-  prefix_length = subnet.prefixlen
-  fixed_octets = prefix_length // 8
-  fixed_positions = '.'.join(str(network_address).split('.')[:fixed_octets])+'.'
-
-  return fixed_positions
+def get_network_prefix(subnet_str):
+    """
+    This function extracts the non-zero octets (fixed part) of the network address.
+    
+    Examples:
+    - get_network_prefix("192.168.0.0/16") -> "192.168."
+    - get_network_prefix("172.21.0.0/12") -> "172.16."
+    - get_network_prefix("10.0.0.0/8") -> "10."
+    """
+    subnet = ipaddress.ip_network(subnet_str, strict=False)
+    network_address = subnet.network_address
+    fixed_positions = ''
+    for octet in str(network_address).split('.'):
+        if octet != '0':
+            fixed_positions += octet + '.'
+    return fixed_positions
