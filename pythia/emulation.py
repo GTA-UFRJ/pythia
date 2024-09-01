@@ -40,8 +40,8 @@ def emulate(networks, links):
       continue
     time.sleep(time_difference - emulation_time_error/2)
     print(f"Event = {event}")
-    #while True:
-    #pass
+  #while True:
+  #pass
 
 def bootstrap(networks, mec_hosts, mec_apps, UEs, links, server_ip):
   # Need to create the ping_sender and ping_receiver containers.
@@ -69,6 +69,12 @@ def bootstrap(networks, mec_hosts, mec_apps, UEs, links, server_ip):
                              networks['infra'],
                              networks['mec'])
     docker_utils.start_container(mec_hosts[vmh])
+    docker_utils.rename_container_interface(networks['infra'].ip_range,
+                                            networks['infra'].interface,
+                                            mec_hosts[vmh].docker_id)
+    docker_utils.rename_container_interface(networks['mec'].ip_range,
+                                            networks['mec'].interface,
+                                            mec_hosts[vmh].docker_id)
 
   #Create UEs
   for vUE in UEs:
@@ -78,6 +84,12 @@ def bootstrap(networks, mec_hosts, mec_apps, UEs, links, server_ip):
                              networks['infra'],
                              networks['ue'])
     docker_utils.start_container(UEs[vUE])
+    docker_utils.rename_container_interface(networks['infra'].ip_range,
+                                            networks['infra'].interface,
+                                            UEs[vUE].docker_id)
+    docker_utils.rename_container_interface(networks['ue'].ip_range,
+                                            networks['ue'].interface,
+                                            UEs[vUE].docker_id)
 
     #Start apps on each vUE
     #TODO: Set this on emulation start
@@ -88,6 +100,9 @@ def bootstrap(networks, mec_hosts, mec_apps, UEs, links, server_ip):
       print(f"UE ports = {ue_app.ports}")
       docker_utils.create_ue_app(ue_app, networks['ue'])
       docker_utils.start_container(ue_app)
+      docker_utils.rename_container_interface(networks['ue'].ip_range,
+                                            networks['ue'].interface,
+                                            ue_app.docker_id)
       docker_utils.connect_app_to_host(ue_app,
                                        networks['ue'].interface,
                                        networks['mec'].ip_range)
@@ -109,6 +124,9 @@ def bootstrap(networks, mec_hosts, mec_apps, UEs, links, server_ip):
                                         networks['mec'].ip_range)
 
     docker_utils.start_container(mec_apps[mec_app])
+    docker_utils.rename_container_interface(networks['mec'].ip_range,
+                                            networks['mec'].interface,
+                                            mec_apps[mec_app].docker_id)
     docker_utils.connect_app_to_host(mec_apps[mec_app],
                                      networks['mec'].interface,
                                      networks['ue'].ip_range)

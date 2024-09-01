@@ -1,8 +1,8 @@
-# Stop and remove all running containers
-running_containers=$(docker ps -q)
-if [ -n "$running_containers" ]; then
-  docker stop $running_containers
-  docker rm $running_containers
+# Stop and remove all containers
+containers=$(docker ps -aq)
+if [ -n "$containers" ]; then
+  docker stop $containers
+  docker rm $containers
 fi
 
 # Leaves the docker swarm
