@@ -35,6 +35,27 @@ def swarm_init():
       sys.exit(1)
   return 0
 
+def create_host_service(host, infra_network, external_network):
+  """This function creates a Docker service without running it.
+  Parameters:
+    host: the PythiaEmulationHost object
+  """
+  logging.info(f"Creating service {host.docker_id} from {host.image}, " +
+                f"with infra_ip={host.infra_ip}, and external_ip={host.external_ip}.")
+
+  # Define the service configuration
+  service_config = {
+      'name': host.docker_id,
+      'image': host.image,
+      'cap_add': ["NET_ADMIN"],
+      'networks': [infra_network.name, external_network.name]
+  }
+
+  # Create the service
+  client.services.create(**service_config)
+
+  return 0
+
 def create_host(host, infra_network, external_network):
   """This function creates a host container without running it.
   Parameters:
@@ -181,7 +202,6 @@ def connect(docker_container, network, ip):
   c = client.containers.get(docker_container.docker_id)
   network.docker_obj.connect(c,ipv4_address=ip)
 
-
 def connect_app_to_host(app,
                         network_interface,
                         other_network_range):
@@ -223,15 +243,36 @@ def execute_cmd(cmd, container_id):
   container = client.containers.get(container_id)
   return container.exec_run(cmd)
 
+def execute_cmd2(cmd, service_name):
+  """
+  This function executes the command cmd 
+  in the first available container of the service represented by service_name.
+  """
+  # Get the list of tasks for the given service
+  service = client.services.get(service_name)
+  tasks = service.tasks(filters={'desired-state': 'running'})
+
+  if not tasks:
+      raise ValueError(f"No running tasks found for service: {service_name}")
+  
+  print(tasks[0])
+
+  # Get the container ID from the first task (you may need to adapt this for your use case)
+  container_id = tasks[0]['Status']['ContainerStatus']['ContainerID']
+
+  # Execute the command in the container
+  container = client.containers.get(container_id)
+  return container.exec_run(cmd)
+
 def rename_container_interface(network_range, network_interface, container_id):
   subnet_fixed_positions = get_network_prefix(network_range)
 
   # print(f'sh -c "ip -o addr show | grep \'{subnet_fixed_positions}\' | awk \'{{print $2}}\' | cut -d \':\' -f1"')
-  interface = execute_cmd(f'sh -c "ip -o addr show | grep \'{subnet_fixed_positions}\' | awk \'{{print $2}}\' | cut -d \':\' -f1"', container_id)[1].decode().strip()
+  interface = execute_cmd2(f'sh -c "ip -o addr show | grep \'{subnet_fixed_positions}\' | awk \'{{print $2}}\' | cut -d \':\' -f1"', container_id)[1].decode().strip()
   # print(interface)
 
   # print(f'sh -c "ip link set {interface} down; ip link set {interface} name {network_interface} ; ip link set {network_interface} up"')
-  execute_cmd(f'sh -c "ip link set {interface} down; ip link set {interface} name {network_interface} ; ip link set {network_interface} up"', container_id)[1]
+  execute_cmd2(f'sh -c "ip link set {interface} down; ip link set {interface} name {network_interface} ; ip link set {network_interface} up"', container_id)[1]
 
 def start_link(vUE, vmec_host,
                 network, distribution=0):
