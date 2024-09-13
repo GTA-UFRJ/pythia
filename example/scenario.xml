@@ -2,7 +2,7 @@
 <experiment>
 
   <ue name="ue0" positions_file="example/ue1_positions.csv">
-    <ue_app name="ping_sender0" image="detect_latency" command="172.21.0.3" volume="ue0">
+    <ue_app name="ping_sender0" image="detect_latency" command="" volume="ue0">
       <volume>ue0:/output</volume>
     </ue_app>
  </ue>

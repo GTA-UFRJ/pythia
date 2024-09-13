@@ -69,13 +69,6 @@ def bootstrap(networks, mec_hosts, mec_apps, UEs, links, server_ip):
     docker_utils.create_host_service(mec_hosts[vmh],
                                     networks['infra'],
                                     networks['mec'])
-
-    # docker_utils.create_host(mec_hosts[vmh],
-    #                          networks['infra'],
-    #                          networks['mec']) ####################
-    # docker_utils.start_container(mec_hosts[vmh]) #####################
-
-    time.sleep(20)
     
     docker_utils.rename_container_interface(networks['infra'].ip_range,
                                             networks['infra'].interface,
@@ -83,18 +76,14 @@ def bootstrap(networks, mec_hosts, mec_apps, UEs, links, server_ip):
     docker_utils.rename_container_interface(networks['mec'].ip_range,
                                             networks['mec'].interface,
                                             mec_hosts[vmh].docker_id) #####################
-    
-    while True:
-      pass
 
   #Create UEs
   for vUE in UEs:
     UEs[vUE].infra_ip = networks['infra'].allocate_ip()
     UEs[vUE].external_ip = networks['ue'].allocate_ip()
-    docker_utils.create_host(UEs[vUE],
+    docker_utils.create_host_service(UEs[vUE],
                              networks['infra'],
                              networks['ue']) ######################
-    docker_utils.start_container(UEs[vUE]) ######################
     docker_utils.rename_container_interface(networks['infra'].ip_range,
                                             networks['infra'].interface,
                                             UEs[vUE].docker_id) ######################
@@ -109,11 +98,12 @@ def bootstrap(networks, mec_hosts, mec_apps, UEs, links, server_ip):
       ue_app.host = UEs[vUE]
       docker_utils.create_ue_volume(ue_app) ######################
       print(f"UE ports = {ue_app.ports}")
-      docker_utils.create_ue_app(ue_app, networks['ue']) ######################
-      docker_utils.start_container(ue_app) ######################
+      docker_utils.create_ue_app_service(ue_app, networks['ue']) ######################
       docker_utils.rename_container_interface(networks['ue'].ip_range,
                                             networks['ue'].interface,
                                             ue_app.docker_id) ######################
+      while True:
+        pass
       docker_utils.connect_app_to_host(ue_app,
                                        networks['ue'].interface,
                                        networks['mec'].ip_range) ######################

@@ -54,6 +54,10 @@ def create_host_service(host, infra_network, external_network):
   # Create the service
   client.services.create(**service_config)
 
+  service = client.services.get(host.docker_id)
+  while not service.tasks()[0]['Status']['State'] == 'running':
+    service.reload()
+
   return 0
 
 def create_host(host, infra_network, external_network):
@@ -93,45 +97,8 @@ def create_ue_volume(app):
 
   for volume in app.volume:
     if ":/output" in volume:
-      parts = volume.split(":")
-      ue_name = parts[0]
+      ue_name = volume.split(":")[0]
       client.volumes.create(name = ue_name)
-
-def create_external_app(app, network):
-  """This function creates an app container without running it.
-  Parameters:
-    app: the app to run
-    network: the network to connect the app container to
-  """
-  logging.info(f"Creating container {app.docker_id} from {app.image}, " +
-                f"with ip={app.ip}.")
-  
-  # Initialize the base parameters for the container creation
-  params = {
-      "image": app.image,
-      "name": app.docker_id,
-      "command": app.command,
-      "cap_add": ["NET_ADMIN"],
-  }
-  
-  # Add volume if it exists
-  if app.volume:
-    params["volumes"] = app.volume
-  if app.devices:
-    params["devices"] = app.devices
-  if app.environment:
-    params["environment"] = app.environment
-  if app.ports:
-    params["ports"] = app.ports
-
-  logging.info(f"Creating ue app with params {params}.")
-
-  # Call the create function with the dynamically built parameters
-  client.containers.create(**params)
-
-  # Connect the created container to the specified network with the given IP
-  connect(app, network, app.ip)
-
 
 def create_mec_app(app, network):
   """This function creates an app container without running it.
@@ -168,9 +135,68 @@ def create_ue_app(app, network):
   """This function creates an app container without running it.
   Parameters:
     app: the app to run
-    host: the PythiaUEApp object 
+    network: the network to connect the app container to
   """
-  create_external_app(app,network)
+  logging.info(f"Creating container {app.docker_id} from {app.image}, " +
+                f"with ip={app.ip}.")
+  
+  # Initialize the base parameters for the container creation
+  params = {
+      "image": app.image,
+      "name": app.docker_id,
+      "command": app.command,
+      "cap_add": ["NET_ADMIN"],
+  }
+  
+  # Add volume if it exists
+  if app.volume:
+    params["volumes"] = app.volume
+  if app.devices:
+    params["devices"] = app.devices
+  if app.environment:
+    params["environment"] = app.environment
+  if app.ports:
+    params["ports"] = app.ports
+
+  logging.info(f"Creating ue app with params {params}.")
+
+  # Call the create function with the dynamically built parameters
+  client.containers.create(**params)
+
+  # Connect the created container to the specified network with the given IP
+  connect(app, network, app.ip)
+
+def create_ue_app_service(app, network):
+  """This function creates and runs an app service based on provided configuration.
+  Parameters:
+      app: the app to run
+      network: the network to connect the app service to
+  """
+  logging.info(f"Creating service {app.docker_id} from {app.image}, " +
+                f"with ip={app.ip}.")
+
+  # Initialize the base parameters for the service creation
+  params = {
+      "image": app.image,          # The image used for the service
+      "name": app.docker_id,       # Service name (unique identifier)
+      "command": app.command,      # Command to run in the service
+      "cap_add": ["NET_ADMIN"],    # Required capability
+      "networks": [network.name],  # Network to connect the service
+  }
+
+  if app.volume:
+      params["mounts"] = [{"source": v.split(":")[0], "target": v.split(":")[1], "type": "volume"} for v in app.volume]
+  if app.environment:
+      params["env"] = app.environment
+
+  logging.info(f"Creating ue app service with params {params}.")
+
+  # Create the service using Docker's Python API
+  service = client.services.create(**params)
+
+  # Wait for the service to start running
+  while service.tasks()[0]['Status']['State'] != 'running':
+      service.reload()
 
 def delete_network(network):
   """This function deletes the docker network
@@ -254,8 +280,6 @@ def execute_cmd2(cmd, service_name):
 
   if not tasks:
       raise ValueError(f"No running tasks found for service: {service_name}")
-  
-  print(tasks[0])
 
   # Get the container ID from the first task (you may need to adapt this for your use case)
   container_id = tasks[0]['Status']['ContainerStatus']['ContainerID']
