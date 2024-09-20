@@ -56,6 +56,8 @@ def bootstrap(networks, mec_hosts, mec_apps, UEs, links, server_ip):
   for net in networks:
     docker_utils.create_network(networks[net])
 
+  time.sleep(5)
+
   #Allocate mec_apps ip's before allocating
   # ip's to the virtual mec hosts
   for mec_app in mec_apps:

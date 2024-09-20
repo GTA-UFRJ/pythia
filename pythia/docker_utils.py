@@ -47,8 +47,7 @@ def create_host_service(host, infra_network, external_network):
   service_config = {
       'name': host.docker_id,
       'image': host.image,
-      'cap_add': ["NET_ADMIN"],
-      'networks': [infra_network.name, external_network.name]
+      'cap_add': ["NET_ADMIN"]
   }
 
   # Create the service
@@ -58,6 +57,8 @@ def create_host_service(host, infra_network, external_network):
   while len(service.tasks()) != 0 and service.tasks()[0]['Status']['State'] != 'running':
       service.reload()
 
+  connect2(host, infra_network, host.infra_ip)
+  connect2(host, external_network, host.external_ip)
   return 0
 
 def create_host(host, infra_network, external_network):
@@ -145,8 +146,7 @@ def create_mec_app_service(app, network):
       "image": app.image,          # The image used for the service
       "name": app.docker_id,       # Service name (unique identifier)
       "command": app.command,      # Command to run in the service
-      "cap_add": ["NET_ADMIN"],    # Required capability
-      "networks": [network.name],  # Network to connect the service
+      "cap_add": ["NET_ADMIN"]     # Required capability
   }
 
   if app.environment:
@@ -160,6 +160,10 @@ def create_mec_app_service(app, network):
   # Wait for the service to start running
   while len(service.tasks()) != 0 and service.tasks()[0]['Status']['State'] != 'running':
       service.reload()
+  
+  # Connect the created container to the specified network with the given IP
+  logging.info(f"Connecting mec app to {network} with ip {app.ip}")
+  connect2(app, network, app.ip)
 
 def create_ue_app(app, network):
   """This function creates an app container without running it.
@@ -210,8 +214,7 @@ def create_ue_app_service(app, network):
       "image": app.image,          # The image used for the service
       "name": app.docker_id,       # Service name (unique identifier)
       "command": app.command,      # Command to run in the service
-      "cap_add": ["NET_ADMIN"],    # Required capability
-      "networks": [network.name],  # Network to connect the service
+      "cap_add": ["NET_ADMIN"]    # Required capability
   }
 
   if app.volume:
@@ -227,6 +230,9 @@ def create_ue_app_service(app, network):
   # Wait for the service to start running
   while len(service.tasks()) != 0 and service.tasks()[0]['Status']['State'] != 'running':
       service.reload()
+  
+  # Connect the created container to the specified network with the given IP
+  connect2(app, network, app.ip)
 
 def delete_network(network):
   """This function deletes the docker network
@@ -257,6 +263,23 @@ def connect(docker_container, network, ip):
   """This function connects docker_container to the network"""
   c = client.containers.get(docker_container.docker_id)
   network.docker_obj.connect(c,ipv4_address=ip)
+
+def connect2(docker_service, network, ip):
+  """This function connects docker_container to the network"""
+  service = client.services.get(docker_service.docker_id)
+  tasks = service.tasks(filters={'desired-state': 'running'})
+
+  if not tasks:
+      raise ValueError(f"No running tasks found for service: {docker_service}")
+
+  # Get the container ID from the first task (you may need to adapt this for your use case)
+  container_id = tasks[0]['Status']['ContainerStatus']['ContainerID']
+
+  # Execute the command in the container
+  container = client.containers.get(container_id)
+  network_obj = client.networks.get(network.name)  # or use network.id if you have it
+  network_obj.connect(container, ipv4_address=ip)
+  # network.docker_obj.connect(container,ipv4_address=ip)
 
 def connect_app_to_host(app,
                         network_interface,
@@ -453,12 +476,12 @@ def create_api_container_service(app, network):
   service = client.services.create(app.image,
                              name=app.docker_id,
                              command=app.command,
-                             cap_add=["NET_ADMIN"],
-                             networks=[network.name])
+                             cap_add=["NET_ADMIN"])
   logging.info(f'IP is {app.ip}')
   # Wait for the service to start running
   while len(service.tasks()) != 0 and service.tasks()[0]['Status']['State'] != 'running':
       service.reload()
+  connect2(app, network, app.ip)
   return 0
 
 def get_subnet_ip(ip, bits):
