@@ -55,8 +55,8 @@ def create_host_service(host, infra_network, external_network):
   client.services.create(**service_config)
 
   service = client.services.get(host.docker_id)
-  while not service.tasks()[0]['Status']['State'] == 'running':
-    service.reload()
+  while len(service.tasks()) != 0 and service.tasks()[0]['Status']['State'] != 'running':
+      service.reload()
 
   return 0
 
@@ -131,6 +131,36 @@ def create_mec_app(app, network):
   logging.info(f"Connecting mec app to {network} with ip {app.ip}")
   connect(app, network, app.ip)
 
+def create_mec_app_service(app, network):
+  """This function creates and runs an app service based on provided configuration.
+  Parameters:
+      app: the app to run
+      network: the network to connect the app service to
+  """
+  logging.info(f"Creating service {app.docker_id} from {app.image}, " +
+                f"with ip={app.ip}.")
+
+  # Initialize the base parameters for the service creation
+  params = {
+      "image": app.image,          # The image used for the service
+      "name": app.docker_id,       # Service name (unique identifier)
+      "command": app.command,      # Command to run in the service
+      "cap_add": ["NET_ADMIN"],    # Required capability
+      "networks": [network.name],  # Network to connect the service
+  }
+
+  if app.environment:
+      params["env"] = app.environment
+
+  logging.info(f"Creating ue app service with params {params}.")
+
+  # Create the service using Docker's Python API
+  service = client.services.create(**params)
+
+  # Wait for the service to start running
+  while len(service.tasks()) != 0 and service.tasks()[0]['Status']['State'] != 'running':
+      service.reload()
+
 def create_ue_app(app, network):
   """This function creates an app container without running it.
   Parameters:
@@ -195,7 +225,7 @@ def create_ue_app_service(app, network):
   service = client.services.create(**params)
 
   # Wait for the service to start running
-  while service.tasks()[0]['Status']['State'] != 'running':
+  while len(service.tasks()) != 0 and service.tasks()[0]['Status']['State'] != 'running':
       service.reload()
 
 def delete_network(network):
@@ -240,7 +270,7 @@ def connect_app_to_host(app,
   #execute_cmd(cmd, app.docker_id)
   #cmd = f"ip route add default via {gateway_ip} dev {network_interface}"
   cmd = f"ip route add {other_network_range} via {app.host.external_ip}"
-  execute_cmd(cmd, app.docker_id)
+  execute_cmd2(cmd, app.docker_id)
   return 0
 
 def connect_app_to_app(ue_app,
@@ -258,10 +288,10 @@ def connect_app_to_app(ue_app,
   #mec_app_subnet = get_subnet_ip(mec_app.ip, 16)
 
   cmd = f"ip route add {ue_network_range} via {ue_app.host.infra_ip}"
-  execute_cmd(cmd, mec_app.host.docker_id)
+  execute_cmd2(cmd, mec_app.host.docker_id)
 
   cmd = f"ip route add {mec_network_range} via {mec_app.host.infra_ip}"
-  execute_cmd(cmd, ue_app.host.docker_id)
+  execute_cmd2(cmd, ue_app.host.docker_id)
 
 def execute_cmd(cmd, container_id):
   """This function executes the command cmd 
@@ -323,7 +353,7 @@ def start_link_on_host(host, dst, interface, side):
             f"tc filter add dev {interface} parent 1:0 prio 0 u32 match ip dst {app.ip} flowid {queue}",
             f"ping -c 1 {app.ip}"]
       for cmd in cmds:
-        execute_cmd(cmd, host.docker_id)
+        execute_cmd2(cmd, host.docker_id)
         
   else:
     for app in dst.apps:
@@ -333,7 +363,7 @@ def start_link_on_host(host, dst, interface, side):
             f"tc filter add dev {interface} parent 1:0 prio 0 u32 match ip dst {app.ip} flowid {queue}",
             f"ping -c 1 {app.ip}"]
       for cmd in cmds:
-        execute_cmd(cmd, host.docker_id)
+        execute_cmd2(cmd, host.docker_id)
 
 
 def change_link(vUE, vmec_host,
@@ -365,14 +395,14 @@ def change_link_on_host(host, dst, interface,
       cmds = [f"tc class change dev {interface} parent 1: classid {queue} htb rate {bitrate} ceil 640kbps",
             f"tc qdisc change dev {interface} parent {queue} handle 4{queue.split(':')[1]}: netem delay {delay}ms loss 0%"]
       for cmd in cmds:
-        execute_cmd(cmd, host.docker_id)
+        execute_cmd2(cmd, host.docker_id)
         
   else:
     for app in dst.apps:
       cmds = [f"tc class change dev {interface} parent 1: classid {queue} htb rate {bitrate} ceil 640kbps",
             f"tc qdisc change dev {interface} parent {queue} handle 4{queue.split(':')[1]}: netem delay {delay}ms loss 0%"]
       for cmd in cmds:
-        execute_cmd(cmd, host.docker_id)
+        execute_cmd2(cmd, host.docker_id)
 
 def old_change_link(ue_app, mec_app,
                 ue_network, mec_network,
@@ -417,6 +447,18 @@ def create_api_container(app, network):
                              cap_add=["NET_ADMIN"])
   logging.info(f'IP is {app.ip}')
   connect(app, network, app.ip)
+  return 0
+
+def create_api_container_service(app, network):
+  service = client.services.create(app.image,
+                             name=app.docker_id,
+                             command=app.command,
+                             cap_add=["NET_ADMIN"],
+                             networks=[network.name])
+  logging.info(f'IP is {app.ip}')
+  # Wait for the service to start running
+  while len(service.tasks()) != 0 and service.tasks()[0]['Status']['State'] != 'running':
+      service.reload()
   return 0
 
 def get_subnet_ip(ip, bits):
