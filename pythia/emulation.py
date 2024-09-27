@@ -58,13 +58,13 @@ def bootstrap(networks, mec_hosts, mec_apps, UEs, links, server_ip):
 
   #Create MECHosts
   for vmh in mec_hosts:
-    docker_utils.create_host_service(mec_hosts[vmh],
+    docker_utils.create_host(mec_hosts[vmh],
                                     networks['infra'],
                                     networks['mec'])
 
   #Create UEs
   for vUE in UEs:
-    docker_utils.create_host_service(UEs[vUE],
+    docker_utils.create_host(UEs[vUE],
                              networks['infra'],
                              networks['ue'])
 
@@ -72,7 +72,7 @@ def bootstrap(networks, mec_hosts, mec_apps, UEs, links, server_ip):
     for ue_app in UEs[vUE].apps:
       ue_app.host = UEs[vUE]
       docker_utils.create_ue_volume(ue_app)
-      docker_utils.create_ue_app_service(ue_app, networks['ue'])
+      docker_utils.create_ue_app(ue_app, networks['ue'])
       docker_utils.connect_app_to_host(ue_app,
                                        networks['ue'].interface,
                                        networks['mec'].ip_range)
@@ -83,7 +83,7 @@ def bootstrap(networks, mec_hosts, mec_apps, UEs, links, server_ip):
   for mec_app in mec_apps:
     mec_apps[mec_app].host = mec_host
     mec_host.active_apps.add(mec_apps[mec_app])
-    docker_utils.create_mec_app_service(mec_apps[mec_app], networks['mec'])
+    docker_utils.create_mec_app(mec_apps[mec_app], networks['mec'])
 
     #Set route to this mec_app
     for vUE in UEs:
@@ -108,7 +108,7 @@ def bootstrap(networks, mec_hosts, mec_apps, UEs, links, server_ip):
 
   # Teste de API
   server_app = structures.PythiaServerApp(name='server', image='apps_list:latest', ip=server_ip)
-  docker_utils.create_api_container_service(server_app, networks['ue'])
+  docker_utils.create_api_container(server_app, networks['ue'])
 
 """
 def start(mec_hosts, UEs, mec_apps):
