@@ -56,18 +56,8 @@ def bootstrap(networks, mec_hosts, mec_apps, UEs, links, server_ip):
   for net in networks:
     docker_utils.create_network(networks[net])
 
-  time.sleep(5)
-
-  #Allocate mec_apps ip's before allocating
-  # ip's to the virtual mec hosts
-  for mec_app in mec_apps:
-    mec_apps[mec_app].ip = networks['mec'].allocate_ip(mec_apps[mec_app].ip) 
-
   #Create MECHosts
   for vmh in mec_hosts:
-    mec_hosts[vmh].infra_ip = networks['infra'].allocate_ip()
-    mec_hosts[vmh].external_ip = networks['mec'].allocate_ip()
-
     docker_utils.create_host_service(mec_hosts[vmh],
                                     networks['infra'],
                                     networks['mec'])
@@ -81,8 +71,6 @@ def bootstrap(networks, mec_hosts, mec_apps, UEs, links, server_ip):
 
   #Create UEs
   for vUE in UEs:
-    UEs[vUE].infra_ip = networks['infra'].allocate_ip()
-    UEs[vUE].external_ip = networks['ue'].allocate_ip()
     docker_utils.create_host_service(UEs[vUE],
                              networks['infra'],
                              networks['ue'])
@@ -96,10 +84,8 @@ def bootstrap(networks, mec_hosts, mec_apps, UEs, links, server_ip):
     #Start apps on each vUE
     #TODO: Set this on emulation start
     for ue_app in UEs[vUE].apps:
-      ue_app.ip = networks['ue'].allocate_ip()
       ue_app.host = UEs[vUE]
       docker_utils.create_ue_volume(ue_app)
-      print(f"UE ports = {ue_app.ports}")
       docker_utils.create_ue_app_service(ue_app, networks['ue'])
       docker_utils.rename_container_interface(networks['ue'].ip_range,
                                             networks['ue'].interface,
@@ -143,7 +129,6 @@ def bootstrap(networks, mec_hosts, mec_apps, UEs, links, server_ip):
     element[1].add_new_peer(element[0].infra_ip)
     docker_utils.start_link(element[0], element[1], networks['infra'])
 
-  
   # Teste de API
   server_app = structures.PythiaServerApp(name='server', image='apps_list:latest', ip=server_ip)
   docker_utils.create_api_container_service(server_app, networks['ue'])

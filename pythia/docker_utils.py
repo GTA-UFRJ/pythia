@@ -36,30 +36,46 @@ def swarm_init():
   return 0
 
 def create_host_service(host, infra_network, external_network):
-  """This function creates a Docker service without running it.
-  Parameters:
-    host: the PythiaEmulationHost object
-  """
-  logging.info(f"Creating service {host.docker_id} from {host.image}, " +
-                f"with infra_ip={host.infra_ip}, and external_ip={host.external_ip}.")
+    """This function creates a Docker service without running it.
+    Parameters:
+        host: the PythiaEmulationHost object
+    """
 
-  # Define the service configuration
-  service_config = {
-      'name': host.docker_id,
-      'image': host.image,
-      'cap_add': ["NET_ADMIN"]
-  }
+    # Define the service configuration
+    service_config = {
+        'name': host.docker_id,
+        'image': host.image,
+        'cap_add': ["NET_ADMIN"],
+        'networks': [infra_network.name, external_network.name]
+    }
 
-  # Create the service
-  client.services.create(**service_config)
+    # Create the service
+    client.services.create(**service_config)
 
-  service = client.services.get(host.docker_id)
-  while len(service.tasks()) != 0 and service.tasks()[0]['Status']['State'] != 'running':
-      service.reload()
+    # Get the service and wait for the task to be running
+    service = client.services.get(host.docker_id)
+    while len(service.tasks()) != 0 and service.tasks()[0]['Status']['State'] != 'running':
+        service.reload()
 
-  connect2(host, infra_network, host.infra_ip)
-  connect2(host, external_network, host.external_ip)
-  return 0
+    # Retrieve the container information for the service's tasks
+    task = service.tasks()[0]  # Assuming a single-task service
+    container_id = task['Status']['ContainerStatus']['ContainerID']
+    container = client.containers.get(container_id)
+
+    # Retrieve network settings for the container
+    networks_info = container.attrs['NetworkSettings']['Networks']
+
+    # Print IP addresses for each connected network
+    for network_name, network_data in networks_info.items():
+        ip_address = network_data.get('IPAddress')
+        if network_name == infra_network.name:
+          host.infra_ip = ip_address
+        elif network_name == external_network.name:
+          host.external_ip = ip_address
+    
+    logging.info(f"Creating service {host.docker_id} from {host.image}, " +
+                 f"with infra_ip={host.infra_ip}, and external_ip={host.external_ip}.")
+    return 0
 
 def create_host(host, infra_network, external_network):
   """This function creates a host container without running it.
@@ -138,21 +154,18 @@ def create_mec_app_service(app, network):
       app: the app to run
       network: the network to connect the app service to
   """
-  logging.info(f"Creating service {app.docker_id} from {app.image}, " +
-                f"with ip={app.ip}.")
 
   # Initialize the base parameters for the service creation
   params = {
       "image": app.image,          # The image used for the service
       "name": app.docker_id,       # Service name (unique identifier)
       "command": app.command,      # Command to run in the service
-      "cap_add": ["NET_ADMIN"]     # Required capability
+      "cap_add": ["NET_ADMIN"],     # Required capability
+      "networks": [network.name],  # Network to connect the service
   }
 
   if app.environment:
       params["env"] = app.environment
-
-  logging.info(f"Creating ue app service with params {params}.")
 
   # Create the service using Docker's Python API
   service = client.services.create(**params)
@@ -161,9 +174,21 @@ def create_mec_app_service(app, network):
   while len(service.tasks()) != 0 and service.tasks()[0]['Status']['State'] != 'running':
       service.reload()
   
-  # Connect the created container to the specified network with the given IP
-  logging.info(f"Connecting mec app to {network} with ip {app.ip}")
-  connect2(app, network, app.ip)
+  # Retrieve the container information for the service's tasks
+  task = service.tasks()[0]  # Assuming a single-task service
+  container_id = task['Status']['ContainerStatus']['ContainerID']
+  container = client.containers.get(container_id)
+
+  # Retrieve network settings for the container
+  networks_info = container.attrs['NetworkSettings']['Networks']
+
+  # Print IP addresses for each connected network
+  for network_name, network_data in networks_info.items():
+      ip_address = network_data.get('IPAddress')
+      if network_name == network.name:
+         app.ip = ip_address
+  
+  logging.info(f"Creating service {app.docker_id} from {app.image}, with ip={app.ip}.")
 
 def create_ue_app(app, network):
   """This function creates an app container without running it.
@@ -206,23 +231,20 @@ def create_ue_app_service(app, network):
       app: the app to run
       network: the network to connect the app service to
   """
-  logging.info(f"Creating service {app.docker_id} from {app.image}, " +
-                f"with ip={app.ip}.")
 
   # Initialize the base parameters for the service creation
   params = {
       "image": app.image,          # The image used for the service
       "name": app.docker_id,       # Service name (unique identifier)
       "command": app.command,      # Command to run in the service
-      "cap_add": ["NET_ADMIN"]    # Required capability
+      "cap_add": ["NET_ADMIN"],    # Required capability
+      "networks": [network.name],
   }
 
   if app.volume:
       params["mounts"] = [{"source": v.split(":")[0], "target": v.split(":")[1], "type": "volume"} for v in app.volume]
   if app.environment:
       params["env"] = app.environment
-
-  logging.info(f"Creating ue app service with params {params}.")
 
   # Create the service using Docker's Python API
   service = client.services.create(**params)
@@ -231,8 +253,21 @@ def create_ue_app_service(app, network):
   while len(service.tasks()) != 0 and service.tasks()[0]['Status']['State'] != 'running':
       service.reload()
   
-  # Connect the created container to the specified network with the given IP
-  connect2(app, network, app.ip)
+  # Retrieve the container information for the service's tasks
+  task = service.tasks()[0]  # Assuming a single-task service
+  container_id = task['Status']['ContainerStatus']['ContainerID']
+  container = client.containers.get(container_id)
+
+  # Retrieve network settings for the container
+  networks_info = container.attrs['NetworkSettings']['Networks']
+
+  # Print IP addresses for each connected network
+  for network_name, network_data in networks_info.items():
+      ip_address = network_data.get('IPAddress')
+      if network_name == network.name:
+         app.ip = ip_address
+
+  logging.info(f"Creating service {app.docker_id} from {app.image}, with ip={app.ip}.")
 
 def delete_network(network):
   """This function deletes the docker network
@@ -351,12 +386,11 @@ def rename_container_interface(network_range, network_interface, container_id):
   # print(f'sh -c "ip link set {interface} down; ip link set {interface} name {network_interface} ; ip link set {network_interface} up"')
   execute_cmd2(f'sh -c "ip link set {interface} down; ip link set {interface} name {network_interface} ; ip link set {network_interface} up"', container_id)[1]
 
-def start_link(vUE, vmec_host,
-                network, distribution=0):
+def start_link(vUE, vmec_host, network):
   """
   This function changes the link between two pythia apps.
   bitrate is on kbits
-  delay and distribution are in ms.
+  delay is in ms.
   """
   #Execute on host a
   logging.info(f"Start from {vUE.docker_id} to {vmec_host.docker_id}.")
@@ -370,6 +404,7 @@ def start_link_on_host(host, dst, interface, side):
   queue = host.queue_name.get(dst.infra_ip)
   if side == 'vUE':
     for app in dst.active_apps:
+      print(app.ip, interface, queue)
       cmds = [f"tc qdisc add dev {interface} root handle 1: htb default 1", 
             f"tc class add dev {interface} parent 1: classid {queue} htb rate 10000 ceil 640kbps",
             f"tc qdisc add dev {interface} parent {queue} handle 4{queue.split(':')[1]}: netem delay 1ms",
@@ -380,6 +415,7 @@ def start_link_on_host(host, dst, interface, side):
         
   else:
     for app in dst.apps:
+      print(app.ip, interface, queue)
       cmds = [f"tc qdisc add dev {interface} root handle 1: htb default 1", 
             f"tc class add dev {interface} parent 1: classid {queue} htb rate 10000 ceil 640kbps",
             f"tc qdisc add dev {interface} parent {queue} handle 4{queue.split(':')[1]}: netem delay 1ms",
@@ -389,13 +425,11 @@ def start_link_on_host(host, dst, interface, side):
         execute_cmd2(cmd, host.docker_id)
 
 
-def change_link(vUE, vmec_host,
-                network,
-                bitrate, delay, distribution=0):
+def change_link(vUE, vmec_host, network, bitrate, delay):
   """
   This function changes the link between two pythia apps.
   bitrate is on kbits
-  delay and distribution are in ms.
+  delay is in ms.
   """
   #logging.info("Vou mudar")
   #Execute on host a
@@ -409,8 +443,7 @@ def change_link(vUE, vmec_host,
                       bitrate, float(delay)/2, 'vmec')
   #logging.info("Mudei")
 
-def change_link_on_host(host, dst, interface,
-                        bitrate, delay, side):
+def change_link_on_host(host, dst, interface, bitrate, delay, side):
 
   queue = host.queue_name.get(dst.infra_ip)
   if side == 'vUE':
@@ -476,12 +509,12 @@ def create_api_container_service(app, network):
   service = client.services.create(app.image,
                              name=app.docker_id,
                              command=app.command,
-                             cap_add=["NET_ADMIN"])
+                             cap_add=["NET_ADMIN"],
+                             networks=[network.name])
   logging.info(f'IP is {app.ip}')
   # Wait for the service to start running
   while len(service.tasks()) != 0 and service.tasks()[0]['Status']['State'] != 'running':
       service.reload()
-  connect2(app, network, app.ip)
   return 0
 
 def get_subnet_ip(ip, bits):
