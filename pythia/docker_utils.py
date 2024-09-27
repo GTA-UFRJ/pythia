@@ -11,7 +11,7 @@ client = docker.from_env()
 def swarm_init():
   # Initializes the swarm
   try:
-      response = client.swarm.init()
+      client.swarm.init()
       print("Swarm initialized successfully.")
 
       # Retrieve swarm information
@@ -54,7 +54,7 @@ def create_host_service(host, infra_network, external_network):
 
     # Get the service and wait for the task to be running
     service = client.services.get(host.docker_id)
-    while len(service.tasks()) != 0 and service.tasks()[0]['Status']['State'] != 'running':
+    while len(service.tasks()) == 0 or service.tasks()[0]['Status'].get('ContainerStatus', {}).get('ContainerID') is None:
         service.reload()
 
     # Retrieve the container information for the service's tasks
@@ -73,7 +73,11 @@ def create_host_service(host, infra_network, external_network):
         elif network_name == external_network.name:
           host.external_ip = ip_address
     
-    logging.info(f"Creating service {host.docker_id} from {host.image}, " +
+    # Renaming the interfaces for the infra and external networks
+    rename_container_interface(infra_network.ip_range, infra_network.interface, host.docker_id)
+    rename_container_interface(external_network.ip_range, external_network.interface, host.docker_id)
+    
+    logging.info(f"Created service {host.docker_id} from {host.image}, " +
                  f"with infra_ip={host.infra_ip}, and external_ip={host.external_ip}.")
     return 0
 
@@ -171,7 +175,7 @@ def create_mec_app_service(app, network):
   service = client.services.create(**params)
 
   # Wait for the service to start running
-  while len(service.tasks()) != 0 and service.tasks()[0]['Status']['State'] != 'running':
+  while len(service.tasks()) == 0 or service.tasks()[0]['Status'].get('ContainerStatus', {}).get('ContainerID') is None:
       service.reload()
   
   # Retrieve the container information for the service's tasks
@@ -188,7 +192,10 @@ def create_mec_app_service(app, network):
       if network_name == network.name:
          app.ip = ip_address
   
-  logging.info(f"Creating service {app.docker_id} from {app.image}, with ip={app.ip}.")
+  # Renaming the interfaces for the network
+  rename_container_interface(network.ip_range, network.interface, app.docker_id)
+  
+  logging.info(f"Created service {app.docker_id} from {app.image}, with ip={app.ip}.")
 
 def create_ue_app(app, network):
   """This function creates an app container without running it.
@@ -250,7 +257,7 @@ def create_ue_app_service(app, network):
   service = client.services.create(**params)
 
   # Wait for the service to start running
-  while len(service.tasks()) != 0 and service.tasks()[0]['Status']['State'] != 'running':
+  while len(service.tasks()) == 0 or service.tasks()[0]['Status'].get('ContainerStatus', {}).get('ContainerID') is None:
       service.reload()
   
   # Retrieve the container information for the service's tasks
@@ -266,8 +273,11 @@ def create_ue_app_service(app, network):
       ip_address = network_data.get('IPAddress')
       if network_name == network.name:
          app.ip = ip_address
+  
+  # Renaming the interfaces for the network
+  rename_container_interface(network.ip_range, network.interface, app.docker_id)
 
-  logging.info(f"Creating service {app.docker_id} from {app.image}, with ip={app.ip}.")
+  logging.info(f"Created service {app.docker_id} from {app.image}, with ip={app.ip}.")
 
 def delete_network(network):
   """This function deletes the docker network
@@ -404,7 +414,6 @@ def start_link_on_host(host, dst, interface, side):
   queue = host.queue_name.get(dst.infra_ip)
   if side == 'vUE':
     for app in dst.active_apps:
-      print(app.ip, interface, queue)
       cmds = [f"tc qdisc add dev {interface} root handle 1: htb default 1", 
             f"tc class add dev {interface} parent 1: classid {queue} htb rate 10000 ceil 640kbps",
             f"tc qdisc add dev {interface} parent {queue} handle 4{queue.split(':')[1]}: netem delay 1ms",
@@ -415,7 +424,6 @@ def start_link_on_host(host, dst, interface, side):
         
   else:
     for app in dst.apps:
-      print(app.ip, interface, queue)
       cmds = [f"tc qdisc add dev {interface} root handle 1: htb default 1", 
             f"tc class add dev {interface} parent 1: classid {queue} htb rate 10000 ceil 640kbps",
             f"tc qdisc add dev {interface} parent {queue} handle 4{queue.split(':')[1]}: netem delay 1ms",
@@ -512,8 +520,9 @@ def create_api_container_service(app, network):
                              cap_add=["NET_ADMIN"],
                              networks=[network.name])
   logging.info(f'IP is {app.ip}')
+
   # Wait for the service to start running
-  while len(service.tasks()) != 0 and service.tasks()[0]['Status']['State'] != 'running':
+  while len(service.tasks()) == 0 or service.tasks()[0]['Status'].get('ContainerStatus', {}).get('ContainerID') is None:
       service.reload()
   return 0
 

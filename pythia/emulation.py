@@ -61,35 +61,18 @@ def bootstrap(networks, mec_hosts, mec_apps, UEs, links, server_ip):
     docker_utils.create_host_service(mec_hosts[vmh],
                                     networks['infra'],
                                     networks['mec'])
-    
-    docker_utils.rename_container_interface(networks['infra'].ip_range,
-                                            networks['infra'].interface,
-                                            mec_hosts[vmh].docker_id) 
-    docker_utils.rename_container_interface(networks['mec'].ip_range,
-                                            networks['mec'].interface,
-                                            mec_hosts[vmh].docker_id)
 
   #Create UEs
   for vUE in UEs:
     docker_utils.create_host_service(UEs[vUE],
                              networks['infra'],
                              networks['ue'])
-    docker_utils.rename_container_interface(networks['infra'].ip_range,
-                                            networks['infra'].interface,
-                                            UEs[vUE].docker_id)
-    docker_utils.rename_container_interface(networks['ue'].ip_range,
-                                            networks['ue'].interface,
-                                            UEs[vUE].docker_id)
 
     #Start apps on each vUE
-    #TODO: Set this on emulation start
     for ue_app in UEs[vUE].apps:
       ue_app.host = UEs[vUE]
       docker_utils.create_ue_volume(ue_app)
       docker_utils.create_ue_app_service(ue_app, networks['ue'])
-      docker_utils.rename_container_interface(networks['ue'].ip_range,
-                                            networks['ue'].interface,
-                                            ue_app.docker_id)
       docker_utils.connect_app_to_host(ue_app,
                                        networks['ue'].interface,
                                        networks['mec'].ip_range)
@@ -109,12 +92,6 @@ def bootstrap(networks, mec_hosts, mec_apps, UEs, links, server_ip):
                                         networks['ue'].ip_range,
                                         mec_apps[mec_app],
                                         networks['mec'].ip_range) 
-
-    #docker_utils.start_container(mec_apps[mec_app])
-    docker_utils.rename_container_interface(networks['mec'].ip_range,
-                                            networks['mec'].interface,
-                                            mec_apps[mec_app].docker_id) 
-    
     docker_utils.connect_app_to_host(mec_apps[mec_app],
                                      networks['mec'].interface,
                                      networks['ue'].ip_range)
@@ -132,7 +109,6 @@ def bootstrap(networks, mec_hosts, mec_apps, UEs, links, server_ip):
   # Teste de API
   server_app = structures.PythiaServerApp(name='server', image='apps_list:latest', ip=server_ip)
   docker_utils.create_api_container_service(server_app, networks['ue'])
-  # docker_utils.start_container(server_app)
 
 """
 def start(mec_hosts, UEs, mec_apps):
