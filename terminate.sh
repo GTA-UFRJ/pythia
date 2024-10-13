@@ -6,7 +6,8 @@ if [ -n "$containers" ]; then
 fi
 
 # Leaves the docker swarm
-docker info | grep -q "Swarm: active" && docker swarm leave --force
+# docker info | grep -q "Swarm: active" && docker swarm leave --force
+docker swarm leave --force
 
 # Remove the following networks if they exist
 for network in mec_network ue_network infra_network ingress docker_gwbridge; do

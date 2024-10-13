@@ -26,10 +26,12 @@ def swarm_init():
       manager_token = swarm_info.get('JoinTokens', {}).get('Manager')
       if manager_token:
           print(f"Command to join as a manager: docker swarm join --token {manager_token} {client.info().get('Swarm', {}).get('RemoteManagers', [{}])[0].get('Addr')}")
+      
+      input("\nPlease ensure that all swarm nodes are configured and ready. Press Enter to continue...")
 
   except docker.errors.APIError as e:
       if "This node is already part of a swarm" in str(e):
-          print("This node is already part of a swarm.")
+          print("This node is already part of a swarm. Please run the terminate.sh script.")
       else:
           print(f"Failed to initialize swarm: {e}")
       sys.exit(1)
