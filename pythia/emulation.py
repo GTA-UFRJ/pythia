@@ -30,6 +30,7 @@ def emulate(networks, links):
     time_difference = event.time - emulation_time
     if time_difference < emulation_time_error:
       logging.info(f"Event time = {event.time}, emu time = {emulation_time}, Time diff = {time_difference}")
+      logging.info(f"Link: latency = {event.latency}, upload = {event.upload}, download = {event.download}")
       docker_utils.change_link(event.ue, event.mec_host,
                               networks['infra'],
                               event.upload, event.latency)
@@ -39,12 +40,8 @@ def emulate(networks, links):
     if time_difference < 0:
       continue
     time.sleep(time_difference - emulation_time_error/2)
-    print(f"Event = {event}")
-  while True:
-    pass
 
 def bootstrap(networks, mec_hosts, mec_apps, UEs, links, server_ip):
-  # Need to create the ping_sender and ping_receiver containers.
   """This function bootstraps the emulation.
   It creates the emulation scenario inside docker, 
   with UEs and MECHosts, their networks and ips."""

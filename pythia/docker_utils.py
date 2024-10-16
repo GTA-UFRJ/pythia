@@ -1,5 +1,5 @@
 """This file gathers functions related to docker"""
-import sys
+import sys, re
 import docker
 import logging
 import requests
@@ -11,7 +11,7 @@ client = docker.from_env()
 def swarm_init():
   # Initializes the swarm
   try:
-      client.swarm.init(advertise_addr="100.116.248.92")
+      client.swarm.init()
       print("Swarm initialized successfully.")
 
       # Retrieve swarm information
@@ -300,6 +300,8 @@ def execute_cmd(cmd, service_name):
     container_id = task['Status']['ContainerStatus']['ContainerID']
     node_id = task['NodeID']
 
+    # Adds sh -c and add it into a list
+    cmd = prepare_command(cmd)
     try:
         # Try to execute the command in the local container
         container = client.containers.get(container_id)
@@ -325,9 +327,7 @@ def execute_cmd(cmd, service_name):
                 "AttachStderr": True,
                 "Tty": False,
                 "Cmd": cmd
-                # "Privileged": True
             }
-            print(create_exec_url, exec_data)
             create_exec_response = requests.post(create_exec_url, json=exec_data)
             if create_exec_response.status_code == 201:
                 exec_id = create_exec_response.json()["Id"]
@@ -341,16 +341,12 @@ def execute_cmd(cmd, service_name):
 
                 start_exec_response = requests.post(start_exec_url, json=start_exec_data)
                 if start_exec_response.status_code == 200:
-                    try:
-                        # Attempt to parse the response as JSON
-                        return start_exec_response.json()
-                    except ValueError:
-                        # If it fails, return the plain text response
-                        return start_exec_response.text
+                    # Return the response as text without any binary characters
+                    return re.sub(r'[^\x20-\x7E]', '', start_exec_response.text)
                 else:
-                    print(f"Failed to start exec command on node '{ip_address}'. Status code: {start_exec_response.status_code}")
+                    print(f"Failed to start exec command on node '{ip_address}'. Status code: {start_exec_response.status_code}. Message: {start_exec_response.text}")
             else:
-                print(f"Failed to create exec instance on node '{ip_address}'. Status code: {create_exec_response.status_code}")
+                print(f"Failed to create exec instance on node '{ip_address}'. Status code: {create_exec_response.status_code} Message: {create_exec_response.text}")
 
         except requests.exceptions.RequestException as e:
             print(f"Error connecting to Docker API on node '{ip_address}': {e}")
@@ -359,10 +355,7 @@ def execute_cmd(cmd, service_name):
 def rename_container_interface(network_range, network_interface, container_id):
   subnet_fixed_positions = get_network_prefix(network_range)
 
-  # print(f'sh -c "ip -o addr show | grep \'{subnet_fixed_positions}\' | awk \'{{print $2}}\' | cut -d \':\' -f1"')
   interface = execute_cmd(["sh","-c",f"ip -o addr show | grep '{subnet_fixed_positions}' | awk '{{print $2}}' | cut -d ':' -f1"], container_id).strip()
-
-  # print(f'sh -c "ip link set {interface} down; ip link set {interface} name {network_interface} ; ip link set {network_interface} up"')
   execute_cmd(["sh","-c",f"ip link set {interface} down; ip link set {interface} name {network_interface}; ip link set {network_interface} up"], container_id)
 
 def start_link(vUE, vmec_host, network):
@@ -502,3 +495,13 @@ def get_network_prefix(subnet_str):
         if octet != '0':
             fixed_positions += octet + '.'
     return fixed_positions
+
+def prepare_command(cmd):
+    # Check if cmd is a string
+    if isinstance(cmd, str):
+        # Check if 'sh -c' is not part of the command
+        if not cmd.startswith('sh -c'):
+            # If it's not, wrap it in a list with 'sh -c'
+            cmd = ['sh', '-c', cmd]
+
+    return cmd
