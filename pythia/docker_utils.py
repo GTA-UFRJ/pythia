@@ -1,8 +1,8 @@
 """This file gathers functions related to docker"""
-import subprocess
-import os, sys
+import sys
 import docker
 import logging
+import requests
 import ipaddress
 
 #Obtaining docker client
@@ -11,7 +11,7 @@ client = docker.from_env()
 def swarm_init():
   # Initializes the swarm
   try:
-      client.swarm.init()
+      client.swarm.init(advertise_addr="100.116.248.92")
       print("Swarm initialized successfully.")
 
       # Retrieve swarm information
@@ -52,20 +52,15 @@ def create_host(host, infra_network, external_network):
     }
 
     # Create the service
-    client.services.create(**service_config)
+    service = client.services.create(**service_config)
 
     # Get the service and wait for the task to be running
-    service = client.services.get(host.docker_id)
     while len(service.tasks()) == 0 or service.tasks()[0]['Status'].get('ContainerStatus', {}).get('ContainerID') is None:
         service.reload()
 
-    # Retrieve the container information for the service's tasks
-    task = service.tasks()[0]  # Assuming a single-task service
-    container_id = task['Status']['ContainerStatus']['ContainerID']
-    container = client.containers.get(container_id)
-
     # Retrieve network settings for the container
-    networks_info = container.attrs['NetworkSettings']['Networks']
+    container_info = get_service_container_info(service.name)
+    networks_info = container_info['NetworkSettings']['Networks']
 
     # Print IP addresses for each connected network
     for network_name, network_data in networks_info.items():
@@ -82,6 +77,54 @@ def create_host(host, infra_network, external_network):
     logging.info(f"Created service {host.docker_id} from {host.image}, " +
                  f"with infra_ip={host.infra_ip}, and external_ip={host.external_ip}.")
     return 0
+
+def get_service_container_info(service_name):
+    """
+    Retrieve the container information for a given Docker service name.
+    
+    Args:
+        service_name (str): Name of the Docker service.
+    
+    Returns:
+        dict: A JSON object containing the container attributes if found.
+    """
+
+    # Get the service object by name
+    try:
+        service = client.services.get(service_name)
+    except docker.errors.NotFound:
+         print(f"Service '{service_name}' not found.")
+
+    # Get the tasks for this service
+    task = service.tasks()[0]
+    container_id = task['Status']['ContainerStatus']['ContainerID']
+    node_id = task['NodeID']
+
+    # Try to get container details locally
+    try:
+        container = client.containers.get(container_id)
+        return container.attrs  # Return the container details as JSON
+    except docker.errors.NotFound:
+        # If container is not found locally, proceed to check remote node
+
+        # Get node details to extract the IP address
+        node = client.nodes.get(node_id)
+        node_status = node.attrs['Status']
+        ip_address = node_status['Addr']
+
+        # Query the Docker Engine API on the remote node
+        docker_api_url = f'http://{ip_address}:2375/containers/{container_id}/json'
+
+        try:
+            # Send a GET request to retrieve the container details
+            response = requests.get(docker_api_url)
+            if response.status_code == 200:
+                return response.json()  # Return the JSON data of the container
+            else:
+                print(f"Failed to retrieve container info from node '{ip_address}'. Status code: {response.status_code}")
+        except requests.exceptions.RequestException as e:
+            print(f"Error connecting to Docker API on node '{ip_address}': {e}")
+
 
 def remove_container(container):
   """This function removes the container that
@@ -135,13 +178,9 @@ def create_mec_app(app, network):
   while len(service.tasks()) == 0 or service.tasks()[0]['Status'].get('ContainerStatus', {}).get('ContainerID') is None:
       service.reload()
   
-  # Retrieve the container information for the service's tasks
-  task = service.tasks()[0]  # Assuming a single-task service
-  container_id = task['Status']['ContainerStatus']['ContainerID']
-  container = client.containers.get(container_id)
-
   # Retrieve network settings for the container
-  networks_info = container.attrs['NetworkSettings']['Networks']
+  container_info = get_service_container_info(service.name)
+  networks_info = container_info['NetworkSettings']['Networks']
 
   # Print IP addresses for each connected network
   for network_name, network_data in networks_info.items():
@@ -182,13 +221,9 @@ def create_ue_app(app, network):
   while len(service.tasks()) == 0 or service.tasks()[0]['Status'].get('ContainerStatus', {}).get('ContainerID') is None:
       service.reload()
   
-  # Retrieve the container information for the service's tasks
-  task = service.tasks()[0]  # Assuming a single-task service
-  container_id = task['Status']['ContainerStatus']['ContainerID']
-  container = client.containers.get(container_id)
-
   # Retrieve network settings for the container
-  networks_info = container.attrs['NetworkSettings']['Networks']
+  container_info = get_service_container_info(service.name)
+  networks_info = container_info['NetworkSettings']['Networks']
 
   # Print IP addresses for each connected network
   for network_name, network_data in networks_info.items():
@@ -248,33 +283,87 @@ def connect_app_to_app(ue_app,
   execute_cmd(cmd, ue_app.host.docker_id)
 
 def execute_cmd(cmd, service_name):
-  """
-  This function executes the command cmd 
-  in the first available container of the service represented by service_name.
-  """
-  # Get the list of tasks for the given service
-  service = client.services.get(service_name)
-  tasks = service.tasks(filters={'desired-state': 'running'})
+    """
+    This function executes the command 'cmd' in the first available container of 
+    the service represented by service_name.
+    """
 
-  if not tasks:
-      raise ValueError(f"No running tasks found for service: {service_name}")
+    # Get the list of tasks for the given service
+    service = client.services.get(service_name)
+    tasks = service.tasks()
 
-  # Get the container ID from the first task (you may need to adapt this for your use case)
-  container_id = tasks[0]['Status']['ContainerStatus']['ContainerID']
+    if not tasks:
+        raise ValueError(f"No running tasks found for service: {service_name}")
 
-  # Execute the command in the container
-  container = client.containers.get(container_id)
-  return container.exec_run(cmd)
+    # Get the container ID from the first task
+    task = tasks[0]  # Assuming single container task for the service
+    container_id = task['Status']['ContainerStatus']['ContainerID']
+    node_id = task['NodeID']
+
+    try:
+        # Try to execute the command in the local container
+        container = client.containers.get(container_id)
+        exec_result = container.exec_run(cmd)
+        return exec_result[1].decode()
+    except docker.errors.NotFound:
+        # If container is not found locally, proceed to check remote node
+
+        # Get node details to extract the IP address
+        node = client.nodes.get(node_id)
+        node_status = node.attrs['Status']
+        ip_address = node_status['Addr']
+
+        # Docker API URL for the remote node
+        docker_api_url = f'http://{ip_address}:2375'
+
+        try:
+            # Step 1: Create an exec instance for the command
+            create_exec_url = f"{docker_api_url}/containers/{container_id}/exec"
+            exec_data = {
+                "AttachStdin": False,
+                "AttachStdout": True,
+                "AttachStderr": True,
+                "Tty": False,
+                "Cmd": cmd
+                # "Privileged": True
+            }
+            print(create_exec_url, exec_data)
+            create_exec_response = requests.post(create_exec_url, json=exec_data)
+            if create_exec_response.status_code == 201:
+                exec_id = create_exec_response.json()["Id"]
+
+                # Step 2: Start the exec instance to run the command
+                start_exec_url = f"{docker_api_url}/exec/{exec_id}/start"
+                start_exec_data = {
+                    "Detach": False,
+                    "Tty": False
+                }
+
+                start_exec_response = requests.post(start_exec_url, json=start_exec_data)
+                if start_exec_response.status_code == 200:
+                    try:
+                        # Attempt to parse the response as JSON
+                        return start_exec_response.json()
+                    except ValueError:
+                        # If it fails, return the plain text response
+                        return start_exec_response.text
+                else:
+                    print(f"Failed to start exec command on node '{ip_address}'. Status code: {start_exec_response.status_code}")
+            else:
+                print(f"Failed to create exec instance on node '{ip_address}'. Status code: {create_exec_response.status_code}")
+
+        except requests.exceptions.RequestException as e:
+            print(f"Error connecting to Docker API on node '{ip_address}': {e}")
+     
 
 def rename_container_interface(network_range, network_interface, container_id):
   subnet_fixed_positions = get_network_prefix(network_range)
 
   # print(f'sh -c "ip -o addr show | grep \'{subnet_fixed_positions}\' | awk \'{{print $2}}\' | cut -d \':\' -f1"')
-  interface = execute_cmd(f'sh -c "ip -o addr show | grep \'{subnet_fixed_positions}\' | awk \'{{print $2}}\' | cut -d \':\' -f1"', container_id)[1].decode().strip()
-  # print(interface)
+  interface = execute_cmd(["sh","-c",f"ip -o addr show | grep '{subnet_fixed_positions}' | awk '{{print $2}}' | cut -d ':' -f1"], container_id).strip()
 
   # print(f'sh -c "ip link set {interface} down; ip link set {interface} name {network_interface} ; ip link set {network_interface} up"')
-  execute_cmd(f'sh -c "ip link set {interface} down; ip link set {interface} name {network_interface} ; ip link set {network_interface} up"', container_id)[1]
+  execute_cmd(["sh","-c",f"ip link set {interface} down; ip link set {interface} name {network_interface}; ip link set {network_interface} up"], container_id)
 
 def start_link(vUE, vmec_host, network):
   """
