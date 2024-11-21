@@ -198,7 +198,7 @@ pip install -r requirements.txt
     
     - For using `simple_server`:
     ```shell
-    docker build -f example/simple_server/Dockerfile -t pythia:simple_server example/simple_server
+    docker build -f example/simple_server/Dockerfile -t simple_server:latest example/simple_server
     ```
     
     - For using `apps_list`:
